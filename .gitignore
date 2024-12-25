@@ -2,3 +2,4 @@ OGD/
 pygame_version/
 */.vscode
 venv/
+extern/
