@@ -8,12 +8,12 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
-import cmake_example as m
+import cmake_example as game
 
 def test_main():
-    assert m.__version__ == "0.0.1"
-    assert m.add(1, 2) == 3
-    assert m.subtract(1, 2) == -1
+    assert game.__version__ == "0.0.1"
+    assert game.add(1, 2) == 3
+    assert game.subtract(1, 2) == -1
 
 if __name__ == "__main__":
     test_main()
