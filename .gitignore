@@ -3,3 +3,4 @@ pygame_version/
 */.vscode
 venv/
 extern/
+archive/
