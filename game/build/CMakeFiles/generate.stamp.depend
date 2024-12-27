@@ -1,0 +1,45 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeCXXInformation.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeCommonLanguageInclude.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeGenericSystem.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeInitializeConfigs.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeLanguageInformation.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeRCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeSystemSpecificInformation.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeSystemSpecificInitialize.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Compiler/MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Compiler/MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Compiler/MSVC.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CMakeCLinkerInformation.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CMakeCXXLinkerInformation.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CMakeCommonLinkerInformation.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/Linker/Windows-MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/Linker/Windows-MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/Linker/Windows-MSVC.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/Windows-Initialize.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/Windows-MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/Windows-MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/Windows-MSVC.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/Windows.cmake
+C:/Program Files/CMake/share/cmake-3.31/Modules/Platform/WindowsPaths.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLAudioSharedTargets-debug.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLAudioSharedTargets-release.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLAudioSharedTargets.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLConfig.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLConfigVersion.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLGraphicsSharedTargets-debug.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLGraphicsSharedTargets-release.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLGraphicsSharedTargets.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLSystemSharedTargets-debug.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLSystemSharedTargets-release.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLSystemSharedTargets.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLWindowSharedTargets-debug.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLWindowSharedTargets-release.cmake
+C:/Tools/SFML-3.0.0/lib/cmake/SFML/SFMLWindowSharedTargets.cmake
+C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game/CMakeLists.txt
+C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game/build/CMakeFiles/3.31.3/CMakeCCompiler.cmake
+C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game/build/CMakeFiles/3.31.3/CMakeCXXCompiler.cmake
+C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game/build/CMakeFiles/3.31.3/CMakeRCCompiler.cmake
+C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game/build/CMakeFiles/3.31.3/CMakeSystem.cmake

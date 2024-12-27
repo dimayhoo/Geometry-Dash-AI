@@ -1,12 +1,13 @@
 #pragma once
 
-//Dependencies
+// Dependencies
 #include <fstream>
 
-#include <Glass/glass.hpp>
 #include <Windows.h>
+#include <glass.hpp>
 
-//Macros
+
+// Macros
 
 #define mDebug
 #define mTitle std::string("Geometry Dash - AI")
@@ -14,15 +15,15 @@
 #define mMapDirectory std::string("maps/")
 #define mNumOfMaps 10
 #define mNumOfParticles 1000
-#define mGetStyle(fullscreen) fullscreen ? sf::Style::Fullscreen \
-	: sf::Style::Default
+#define mGetStyle(fullscreen)                                                  \
+  fullscreen ? sf::Style::Fullscreen : sf::Style::Default
 
-//Globals
+// Globals
 
-extern int ticks; 
-extern int levelIndex; 
-extern int attempt; 
-extern int generation; 
-extern float farthestDistance; 
+extern int ticks;
+extern int levelIndex;
+extern int attempt;
+extern int generation;
+extern float farthestDistance;
 
-//Others 
+// Others

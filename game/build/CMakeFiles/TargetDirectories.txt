@@ -1,0 +1,3 @@
+C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game/build/CMakeFiles/GeometryDash.dir
+C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game/build/CMakeFiles/ZERO_CHECK.dir

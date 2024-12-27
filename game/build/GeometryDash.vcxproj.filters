@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\gameEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\graphics\render.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\graphics\ui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\graphics\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\logic\collision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\logic\file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\logic\input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\logic\map.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\logic\neuralNet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\logic\particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\logic\player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\gameEngine.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\graphics\render.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\graphics\ui.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\graphics\window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\logic\collision.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\logic\file.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\logic\input.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\logic\map.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\logic\neuralNet.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\logic\particle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\logic\player.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\hdr\resources.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Dmitry\Documents\Coding\VSCFiles\IndependentProjects\GeometryDashAI\game\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{C5FDACBC-9833-3D4B-BA8C-836CC4229EE4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{5522EB86-A4D3-367A-8887-8DFA0B3C543C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
