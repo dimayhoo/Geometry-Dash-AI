@@ -1,11 +1,9 @@
 #pragma once
 
 // Dependencies
-#include <fstream>
-
+#include <Glass/glass.hpp>
 #include <Windows.h>
-#include <glass.hpp>
-
+#include <fstream>
 
 // Macros
 

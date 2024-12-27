@@ -194,9 +194,6 @@ GeometryDashAI_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 GeometryDashAI_SOURCE_DIR:STATIC=C:/Users/Dmitry/Documents/Coding/VSCFiles/IndependentProjects/GeometryDashAI/game
 
-//The directory containing a CMake configuration file for SFML.
-SFML_DIR:PATH=SFML_DIR-NOTFOUND
-
 //Path to a file.
 SFML_DOC_DIR:PATH=SFML_DOC_DIR-NOTFOUND
 
