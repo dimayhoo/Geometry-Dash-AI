@@ -6,3 +6,5 @@ extern/
 archive/
 game/build with sfml 2.5.1/
 game/build with sfml 2.6.0/
+game/OpenGD-built
+game/build_x64
