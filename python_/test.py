@@ -14,6 +14,7 @@ def test_main():
     assert game.__version__ == "0.0.1"
     assert game.add(1, 2) == 3
     assert game.subtract(1, 2) == -1
+    assert game.FORCE_LOAD_LEVEL == True
 
 if __name__ == "__main__":
     test_main()
