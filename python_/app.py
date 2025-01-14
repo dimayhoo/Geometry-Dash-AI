@@ -12,7 +12,6 @@ sys.path.insert(0, parentdir)
 path = os.path.join(pathlib.Path(__file__).parent.parent, "cmake_example/build/lib.win-amd64-cpython-312")
 mesa_dll_path = r"C:/tools/mesa/x64"  # Update this path as needed
 os.environ['PATH'] = path + ";" + os.environ.get('PATH', '')
-print(os.environ['PATH'])
 
 import cmake_example as game
 
