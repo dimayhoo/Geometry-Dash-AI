@@ -38,7 +38,7 @@ def main():
         try:
             # Keep the Python script running to maintain the game loop
             while True:
-                time.sleep(1)
+                time.sleep(0.016)
         except KeyboardInterrupt:
             print("Game terminated by user.")
     else:
