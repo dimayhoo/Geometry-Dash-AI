@@ -22,12 +22,13 @@ def main():
         print(f"Failed to create AppDelegate instance: {e}")
         traceback.print_exc()
         return
+    
+    run = game.run()
+    print(run)
 
     # Initialize the game with the AppDelegate instance
     try:
-        print('something')
         success = game.init(app_delegate)
-        print('something')
     except Exception as e:
         print(f"Initialization encountered an error: {e}")
         traceback.print_exc()
