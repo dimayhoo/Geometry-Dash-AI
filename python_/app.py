@@ -1,20 +1,45 @@
-import os
-import sys
-import inspect
+# python_/app.py
 import time
 import traceback
-import pathlib
+import threading
+from package_init import package_init
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) 
+game = package_init()
+DONE = False
 
-path = os.path.join(pathlib.Path(__file__).parent.parent, "cmake_example/build/lib.win-amd64-cpython-312")
-os.chdir(path)
+def game_runner():
+    try:
+        game.run()
+    except Exception as e:
+        print(f"Game encountered an error: {e}")
+        traceback.print_exc()
 
-import cmake_example as game
+def test_worker(app):
+    global DONE
+    c= 0 
+    while not DONE:
+        time.sleep(2)
+        playLayer = game.PlayLayer.getInstance()
+        print("PlayLayer is initialised successfully.")
+        if playLayer: 
+            print('PlayLayer isn\'t None. It\'s:', playLayer.__dir__())
+            print(playLayer.getLevelData())
+        else:
+            print("PlayLayer isn't initialised in the game still. ")
+    
+    while not DONE:
+        time.sleep(0.016)
+        c+= 1
+        #print('fps')
+        if c == 60:
+            c = 0
+            #print(game.init(app))
+            #print(game.FORCE_LOAD_LEVEL)
+            #print(game.add(2, 3))
+    
 
 def main():
+    global DONE
     # Instantiate AppDelegate
     try:
         app_delegate = game.AppDelegate()
@@ -22,9 +47,19 @@ def main():
         print(f"Failed to create AppDelegate instance: {e}")
         traceback.print_exc()
         return
-    
-    run = game.run()
-    print(run)
+
+    print('Starting the game...')
+    # Start game_runner in a separate thread
+    #game_thread = threading.Thread(target=game_runner)
+    #game_thread.start()
+    threading.Thread(target=test_worker, args=(app_delegate, ), daemon=True).start()
+    try:
+        game.run()
+    except KeyboardInterrupt:
+        print("Game is terminated by user.")
+        DONE = True
+
+    print('Game thread started. You can now control the game.')
 
     # Initialize the game with the AppDelegate instance
     try:
@@ -33,17 +68,20 @@ def main():
         print(f"Initialization encountered an error: {e}")
         traceback.print_exc()
         return
-    
+
     if success:
         print("Initialization successful.")
-        try:
-            # Keep the Python script running to maintain the game loop
-            while True:
-                time.sleep(0.016)
-        except KeyboardInterrupt:
-            print("Game terminated by user.")
-    else:
-        print("Initialization failed.")
+    
+    # Example control loop
+    '''try:
+        while not DONE:
+            # Here, implement your control logic, e.g., AI decisions or keyboard input handling
+            time.sleep(0.016)  # Placeholder for actual logic
+    except KeyboardInterrupt:
+        print("Received KeyboardInterrupt. Shutting down.")
+        DONE = True
+        game.stop()  # Assuming you have a method to gracefully stop the game
+        game_thread.join()'''
 
 if __name__ == "__main__":
     main()
