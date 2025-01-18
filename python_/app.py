@@ -14,6 +14,10 @@ def game_runner():
         print(f"Game encountered an error: {e}")
         traceback.print_exc()
 
+def decode_cmake_level_data(data):
+    for obj in data:
+        print(f"ID: {obj.id}, X: {obj.x}, Y: {obj.y}, Rotation: {obj.rotation}")
+
 def test_worker(app):
     global DONE
     c= 0 
@@ -23,7 +27,8 @@ def test_worker(app):
         print("PlayLayer is initialised successfully.")
         if playLayer: 
             print('PlayLayer isn\'t None. It\'s:', playLayer.__dir__())
-            print(playLayer.getLevelData())
+            lvl_data = playLayer.getLevelData()
+            if lvl_data: decode_cmake_level_data(lvl_data)
         else:
             print("PlayLayer isn't initialised in the game still. ")
     
