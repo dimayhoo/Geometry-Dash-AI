@@ -4,14 +4,17 @@ import traceback
 import threading
 from package_init import package_init
 from levelStructure import decode_cmake_level_data, store_level, visualise_level
-from threads import game_runner, test_worker, level_worker
+from threads import game_runner, test_worker, level_worker, show_object_position
 
 game = package_init()
 DONE = False
 
 def initialise_threads(game, app):
     # threading.Thread(target=test_worker, args=(game, app, DONE), daemon=True).start()
-    threading.Thread(target=level_worker, args=(game, DONE, True), daemon=True).start()
+    # threading.Thread(target=level_worker, args=(game, DONE, True), daemon=True).start()
+    get_pos = threading.Thread(target=show_object_position, args=(game, DONE), daemon=True)
+    
+    get_pos.start()
     return 1
 
 def main():

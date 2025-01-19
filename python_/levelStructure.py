@@ -50,4 +50,4 @@ def store_level(data, level_id):
     return 1
 
 
-visualise_level(path=f"{PATH}/stereo-madness.csv")
+#visualise_level(path=f"{PATH}/stereo-madness.csv")

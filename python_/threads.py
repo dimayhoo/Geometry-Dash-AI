@@ -42,4 +42,23 @@ def level_worker(game, DONE, store=False):
             print("PlayLayer isn't initialised in the game still. ")
     
     return 0
+
+
+def show_object_position(game, DONE):
+    while not DONE:
+        time.sleep(3)
+        playLayer = game.PlayLayer.getInstance()
+        print("PlayLayer is initialised successfully.")
+        if playLayer: 
+            while not DONE:
+                time.sleep(0.016)
+                posX = game.getObjectPositionX(playLayer)
+                posY = game.getObjectPositionY(playLayer)
+                #positions = game_object.getPositionX()
+                print("Object X: {}, Y: {}".format(posX, posY))
+                
+        
+        else:
+            print("PlayLayer isn't initialised in the game still. ")
+
         
