@@ -20,7 +20,7 @@ def test_worker(game, app, DONE):
             #print(game.FORCE_LOAD_LEVEL)
             #print(game.add(2, 3))
 
-def level_worker(game, DONE, store=False):
+def save_level_worker(game, DONE, hitboxes):
     while not DONE:
         time.sleep(3)
         playLayer = game.PlayLayer.getInstance()
@@ -28,14 +28,17 @@ def level_worker(game, DONE, store=False):
         if playLayer: 
             DONE = True
 
+            name = playLayer.getLevelId()
+            if name == -1:
+                return 0
+
             print('PlayLayer isn\'t None. ')
-            lvl_data = playLayer.getLevelData()
-            if lvl_data: 
-                #decode_cmake_level_data(lvl_data)
-                #visualise_level(data=lvl_data)
-                if store:
-                    store_level(lvl_data, 1)
-                pass
+            if hitboxes:
+                lvl_data = playLayer.getLevelHitboxData()
+            else:
+                lvl_data = playLayer.getLevelData()
+
+            store_level(lvl_data, 1)
             return 1
         
         else:
