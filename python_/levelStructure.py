@@ -4,7 +4,8 @@ import torch as th
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
-from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, PATH
+from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, PATH, LAST_GROUND_BLOCK_INDEX
+from helpers import determine_level_ypos, get_block_index_x, get_block_index_y, get_max_x, get_max_y
 
 # Display more rows (default is 60)
 pd.set_option('display.max_rows', 200)
@@ -27,15 +28,17 @@ isBackwards()
 isDown()
 Ypos()
 maxResult() - tracking the best case. At least necessary for Ypos update.
+levelYPos() - ypos which is derived from the level data.
 
 '''
 
-ADDITIONS = { # matrix index | default value to fill
+ADDITIONS = { # matrix row index | default value to fill
     'isShip': (-1,False),
     'isBackwards': (-2,False),
     'isDown': (-3,False),
-    'Ypos': (-4,-2),
-    'maxResult': (-5,-2) # tensors cannot store None
+    'Ypos': (-4,-2), # value-index in blocks!
+    'maxResult': (-5,-2), # tensors cannot store None
+    "levelYPos": (-6,-2)
 }
 
 # TODO: remove this function and update which used it
@@ -60,23 +63,6 @@ def get_data_type(obj):
         return 'hitbox'
     else:
         return 'object'
-
-# If not ending and an object underlap, round to the full.  
-# We should start from the first and shouldn't overlap to the ending.
-# For instance, if x is 15, x + w = 24 and block_size is 6.
-# I should start from 2 and end at 3 instaed of 4.
-def get_block_index_x(x, block_size=ONE_BLOCK_SIZE[0], ending=False):
-    return int(x // block_size - (ending and not x % block_size))
-
-def get_block_index_y(y, block_size=ONE_BLOCK_SIZE[1], ending=False):
-    return int(y // block_size - (ending and not y % block_size))
-
-# top value without remainders
-def get_max_x(Nc, x_block=ONE_BLOCK_SIZE[0]):
-    return Nc * x_block
-
-def get_max_y(Nr, y_block=ONE_BLOCK_SIZE[1]):
-    return Nr * y_block
 
 def decode_level_data(data, columns, to_sort=True):
     # TODO: maybe, to normilise y and x positions, but then all positoins in every game should be handled. 
@@ -174,6 +160,20 @@ def fill_groud_layer(matrix, ground_layer_y=GROUND_LAYER_Y, ground_obj_id=GROUND
 
     return matrix
 
+def fill_level_ypos(matrix):
+    level_ypos_rowi, default_level_ypos = get_addition_i('levelYPos')
+    ypos_rowi, default_ypos = get_addition_i('Ypos')
+    prev_ypos = LAST_GROUND_BLOCK_INDEX + 1 # prevpos is for a slight optimisation.
+
+    for j in range(matrix.shape[1]):
+        ypos = matrix[ypos_rowi, j]
+        if ypos == default_ypos:
+            ypos = determine_level_ypos(matrix[:, j], prev_ypos)
+        matrix[level_ypos_rowi, j] = ypos
+        prev_ypos = ypos
+
+    return matrix
+
 def create_level_matrix(df, columns=HITBOX_COLUMNS):
     # Cube cannot be lower than ground layer (In Geometry Dash, the cube's position relative to the ground layer is fixed by the game's mechanics. The cube generally stays on or above the ground layer, which is the surface the player interacts with.)
     matrix = create_default_matrix(df)
@@ -190,6 +190,9 @@ def create_level_matrix(df, columns=HITBOX_COLUMNS):
     # Filling additions.
     for key, (index_y, def_value) in ADDITIONS.items():
         matrix[index_y, :] = def_value
+
+    # Preprocessing y poses for states.
+    matrix = fill_level_ypos(matrix)
 
     return matrix
 

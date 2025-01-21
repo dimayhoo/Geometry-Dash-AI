@@ -3,6 +3,7 @@ The purpose my agent mostly is to handle states creation,
 level matrices, identifying levels, performance evaluation etc.
 Training, loading, deleting, saving, etc. are handled by
 the model itself.
+TODO: So I should cobine agentHelpers and create an agent class.
 '''
 
 def get_actions():

@@ -1,3 +1,5 @@
+import pathlib
+
 PATH = pathlib.Path(__file__).parent / "levels"
 OBJ_COLUMNS = ['x', 'y', 'rot', 'id']
 HITBOX_COLUMNS = ['x', 'y', 'id', 'w', 'h']
@@ -16,6 +18,8 @@ ONE_BLOCK_SIZE = (6, 15) # Turned out GROUND_LAYER_Y is exactly 7 blocks * 15 ax
 BLOCKS_PER_CUBE = (ONE_CUBE_SIZE[0] // ONE_BLOCK_SIZE[0], ONE_CUBE_SIZE[1] // ONE_BLOCK_SIZE[1])
 GROUND_LAYER_Y = 105
 GROUND_OBJ_ID = -1
+CUBE_TIMES_JUMPER_JUMP = 5 # about 4.5-4.85, definitely less than 5
+LAST_GROUND_BLOCK_INDEX = GROUND_LAYER_Y // ONE_BLOCK_SIZE[1] - (not GROUND_LAYER_Y % ONE_BLOCK_SIZE[1]) # 7 blocks
 
 BATCH_SIZE = 10
 
