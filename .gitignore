@@ -8,4 +8,4 @@ game/build_x64/
 */Resources/
 temp.py
 python_/levels/
-*/__pycache__/
+*/__pycache__

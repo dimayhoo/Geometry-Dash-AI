@@ -11,6 +11,11 @@ from gymnasium import spaces
 import torch as th
 
 
+# one jump is approximately 140.2 axmol units. 
+# Should be tested multiple times to be absolutely sure. 
+X_JUMP_LENGTH = 140
+
+
 '''ONE_CUBE_LENGTH
 ONE_BLOCK_LENGTH
 BLOCKS_PER_STATE

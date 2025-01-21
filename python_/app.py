@@ -3,7 +3,7 @@ import time
 import traceback
 import threading
 from package_init import package_init
-from levelStructure import decode_cmake_level_data, store_level, visualise_level
+from levelStructure import decode_level_data, store_level, visualise_level
 from threads import game_runner, test_worker, save_level_worker, show_object_position
 
 game = package_init()

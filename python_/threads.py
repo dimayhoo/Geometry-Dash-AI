@@ -1,6 +1,6 @@
 import traceback
 import time
-from levelStructure import visualise_level, store_level, decode_cmake_level_data
+from levelStructure import visualise_level, store_level, decode_level_data
 
 def game_runner(game):
     try:
@@ -28,9 +28,9 @@ def save_level_worker(game, DONE, hitboxes):
         if playLayer: 
             DONE = True
 
-            name = playLayer.getLevelId()
-            if name == -1:
-                return 0
+            lvl_id = playLayer.getLevelId()
+            if lvl_id == -1:
+                raise ValueError("Level ID is invalid. ")
 
             print('PlayLayer isn\'t None. ')
             if hitboxes:
@@ -38,7 +38,7 @@ def save_level_worker(game, DONE, hitboxes):
             else:
                 lvl_data = playLayer.getLevelData()
 
-            store_level(lvl_data, 1)
+            store_level(lvl_data, lvl_id=lvl_id, hitboxes=hitboxes)
             return 1
         
         else:
