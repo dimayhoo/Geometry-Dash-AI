@@ -94,17 +94,25 @@ def decode_level_data(data, columns, to_sort=True):
     #print(decoded_data)
     return dec_data
 
-def get_level_data(level_id, columns=None):
+def get_level_data(level_id, is_hit=True, is_csv=False, columns=None, is_init=True):
     name = basic_levels.get(level_id)
     if not name: 
         raise ValueError(f"Level with id {level_id} doesn't exist.")
     
-    path = f"{PATH}/{name}.csv"
-    df = pd.read_csv(path)
+    init = ['', "-init"][is_init]
+    ext = ["pt", "csv"][is_csv]
+    hit = ["-obj", "-hit"][is_hit]
 
-    if columns is None: columns = df.columns
+    path = f"{PATH}/{name}{hit}{init}.{ext}"
     
-    return df[columns]
+    if is_csv:
+        df = pd.read_csv(path)
+        if columns is None: columns = df.columns
+        return df[columns]
+    
+    else:
+        return th.load(path)
+    
     
 
 def visualise_level(dec_data=None, level_id=None, matrix_path=None):
@@ -145,7 +153,7 @@ def visualise_level(dec_data=None, level_id=None, matrix_path=None):
 
     # Otherwise, fallback to original logic for DataFrame or level_id
     if dec_data is None and level_id is not None:
-        dec_data = get_level_data(level_id, columns=["x", "y", "id"])
+        dec_data = get_level_data(level_id, is_csv=True, columns=["x", "y", "id"])
 
     if dec_data is not None:
         sns.scatterplot(x="x", y="y", data=dec_data, hue="id")
@@ -217,5 +225,5 @@ def store_level(data, lvl_id, hitboxes=True, rewrite=True):
     return 1
 
 
-visualise_level(matrix_path=f"{PATH}/1-hit.pt")
+#visualise_level(matrix_path=f"{PATH}/1-hit.pt")
 #print(create_level_matrix(get_level_data(1)))
