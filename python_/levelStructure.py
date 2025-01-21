@@ -62,6 +62,13 @@ basic_levels = {
 # Game's positions are axmol units. They are counted
 # from bottom left corner. They are usually approx pixels.
 
+
+def create_path(lvl_name, is_hitbox=True, is_init=False, is_csv=False):
+    hit = "-hit" if is_hitbox else "-obj"
+    init = "-init" if is_init else ""
+    ext = "csv" if is_csv else "pt"
+    return f"{PATH}/{lvl_name}{hit}{init}.{ext}"
+
 def get_data_type(obj):
     if 'w' in obj:
         return 'hitbox'
@@ -77,6 +84,13 @@ def get_block_index_x(x, block_size=ONE_BLOCK_SIZE[0], ending=False):
 
 def get_block_index_y(y, block_size=ONE_BLOCK_SIZE[1], ending=False):
     return int(y // block_size - (ending and not y % block_size))
+
+# top value without remainders
+def get_max_x(Nc, x_block=ONE_BLOCK_SIZE[0]):
+    return Nc * x_block
+
+def get_max_y(Nr, y_block=ONE_BLOCK_SIZE[1]):
+    return Nr * y_block
 
 def decode_level_data(data, columns, to_sort=True):
     # TODO: maybe, to normilise y and x positions, but then all positoins in every game should be handled. 
@@ -95,15 +109,11 @@ def decode_level_data(data, columns, to_sort=True):
     return dec_data
 
 def get_level_data(level_id, is_hit=True, is_csv=False, columns=None, is_init=True):
-    name = basic_levels.get(level_id)
-    if not name: 
+    lvl_name = basic_levels.get(level_id)
+    if not lvl_name: 
         raise ValueError(f"Level with id {level_id} doesn't exist.")
-    
-    init = ['', "-init"][is_init]
-    ext = ["pt", "csv"][is_csv]
-    hit = ["-obj", "-hit"][is_hit]
 
-    path = f"{PATH}/{name}{hit}{init}.{ext}"
+    path = create_path(lvl_name, is_hit, is_init, is_csv)
     
     if is_csv:
         df = pd.read_csv(path)
@@ -168,12 +178,10 @@ def create_default_matrix(df, number_of_additions=len(ADDITIONS)):
     Nc = x_max // x_block + bool(x_max % x_block) 
     Nr = y_max // y_block + bool(y_max % y_block)
 
-    x_max, y_max = Nc * x_block, Nr * y_block # updating to the top value without remainders
-
     Nr += number_of_additions # for special params
 
     # y is the number of rows and x is the number of columns
-    return th.zeros((int(Nr), int(Nc))), x_max, y_max
+    return th.zeros((int(Nr), int(Nc)))
 
 def fill_groud_layer(matrix, ground_layer_y=GROUND_LAYER_Y, ground_obj_id=GROUND_OBJ_ID):
     matrix[:get_block_index_y(ground_layer_y) + 1, :] = ground_obj_id # y index is exclusive
@@ -182,7 +190,7 @@ def fill_groud_layer(matrix, ground_layer_y=GROUND_LAYER_Y, ground_obj_id=GROUND
 
 def create_level_matrix(df, columns=HITBOX_COLUMNS):
     # Cube cannot be lower than ground layer (In Geometry Dash, the cube's position relative to the ground layer is fixed by the game's mechanics. The cube generally stays on or above the ground layer, which is the surface the player interacts with.)
-    matrix, x_max, y_max = create_default_matrix(df)
+    matrix = create_default_matrix(df)
 
     # Filling objects
     matrix = fill_groud_layer(matrix)
@@ -197,29 +205,35 @@ def create_level_matrix(df, columns=HITBOX_COLUMNS):
     for key, (index_y, def_value) in ADDITIONS.items():
         matrix[index_y, :] = def_value
 
-    return matrix, x_max, y_max
+    return matrix
 
-def store_level(data, lvl_id, hitboxes=True, rewrite=True):
+def update_stored_matrix(matrix, path):
+    if not pathlib.Path(path).exists():
+        raise ValueError(f"Matrix file {path} doesn't exist.")
+    th.save(matrix, path)
+    return 1
+
+def store_level(data, lvl_id, hitboxes=True, overwrite=True):
     basic_levels[lvl_id] = str(lvl_id)
     lvl_name = basic_levels[lvl_id]
     
     if hitboxes:
         columns = HITBOX_COLUMNS
-        pt_path = f"{PATH}/{lvl_name}-hit.pt"
-        csv_path = f"{PATH}/{lvl_name}-hit-init.csv"
+        pt_path = create_path(lvl_name, is_hitbox=True)
+        csv_path = create_path(lvl_name, is_hitbox=True, is_init=True, is_csv=True)
     else:
         columns = OBJ_COLUMNS
-        pt_path = f"{PATH}/{lvl_name}-obj.pt"
-        csv_path = f"{PATH}/{lvl_name}-obj-init.csv"
+        pt_path = create_path(lvl_name, is_hitbox=False)
+        csv_path = create_path(lvl_name, is_hitbox=False, is_init=True, is_csv=True)
 
-    if not rewrite:
+    if not overwrite:
         if pathlib.Path(pt_path).exists() and pathlib.Path(csv_path).exists():
-            return 0
+            return 1
     
     df = decode_level_data(data, columns, to_sort=True)
-    df.to_csv(csv_path)
+    matrix = create_level_matrix(df, columns)
 
-    matrix, x_max, y_max = create_level_matrix(df, columns)
+    df.to_csv(csv_path)
     th.save(matrix, pt_path)
     
     return 1
