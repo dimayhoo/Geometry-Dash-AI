@@ -32,6 +32,7 @@ levelYPos() - ypos which is derived from the level data.
 
 '''
 
+# TODO: maybe, to process these as consts.
 ADDITIONS = { # matrix row index | default value to fill
     'isShip': (-1,False),
     'isBackwards': (-2,False),
