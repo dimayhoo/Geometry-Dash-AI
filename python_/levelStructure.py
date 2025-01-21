@@ -5,6 +5,18 @@ import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
 
+# Display more rows (default is 60)
+pd.set_option('display.max_rows', 200)
+
+# Display more columns (default is 20)
+pd.set_option('display.max_columns', 100)
+
+# Widen the console output
+pd.set_option('display.width', 1000)
+
+# Show more characters in each column
+pd.set_option('display.max_colwidth', 2000)
+
 PATH = pathlib.Path(__file__).parent / "levels"
 OBJ_COLUMNS = ['x', 'y', 'rot', 'id']
 HITBOX_COLUMNS = ['x', 'y', 'id', 'w', 'h']
@@ -116,21 +128,20 @@ def visualise_level(dec_data=None, level_id=None, matrix_path=None):
                 val = mat[y, x].item()  # Convert to Python float/int
                 # Skip if val is ground or default, if you only want to show actual objects
                 # if val == -1 or val == 0: continue
-                data_list.append((y, x, val + 5))
-
-        '''for row in data_list:
-            print(row)'''
+                data_list.append((y, x, val))
 
         df_plot = pd.DataFrame(data_list, columns=["y", "x", "id"])
 
-        print(df_plot.head(100))
-        print(df_plot.iloc[-1, :])
+        #print(df_plot.head(100))
+
+        '''add_df = df_plot.iloc[-len(ADDITIONS):]
+        print(add_df.describe())'''
 
         # 3) Plot with seaborn
         sns.scatterplot(x="x", y="y", data=df_plot, hue="id")
         #plt.gca().invert_yaxis()  # Optional: flip Y for 2D grid
         plt.show()
-        return
+        return df_plot
 
     # Otherwise, fallback to original logic for DataFrame or level_id
     if dec_data is None and level_id is not None:
