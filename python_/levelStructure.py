@@ -7,6 +7,10 @@ import matplotlib.pyplot as plt
 from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, PATH, LAST_GROUND_BLOCK_INDEX
 from helpers import determine_level_ypos, get_block_index_x, get_block_index_y, get_max_x, get_max_y
 
+# TODO: hwo file import works in python? SHould I increase performance by creating a file "simple saving" 
+# to save raw data and process it outside the game running?
+
+
 # Display more rows (default is 60)
 pd.set_option('display.max_rows', 200)
 
@@ -20,12 +24,15 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.max_colwidth', 2000)
 
 
-
+# I store isShip because it's a part of a state. All states 
+# should be derived exactly from env. For the reason that we use
+# indirect actions, I have to store isShip for later instead of 
+# receiving it as a parameter in the moment.
 ''' Additions
 
 isShip()
 isBackwards()
-isDown()
+isTopDown()
 Ypos()
 maxResult() - tracking the best case. At least necessary for Ypos update.
 levelYPos() - ypos which is derived from the level data.
@@ -36,7 +43,7 @@ levelYPos() - ypos which is derived from the level data.
 ADDITIONS = { # matrix row index | default value to fill
     'isShip': (-1,False),
     'isBackwards': (-2,False),
-    'isDown': (-3,False),
+    'isTopDown': (-3,False),
     'Ypos': (-4,-2), # value-index in blocks!
     'maxResult': (-5,-2), # tensors cannot store None
     "levelYPos": (-6,-2)

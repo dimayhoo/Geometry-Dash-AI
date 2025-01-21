@@ -50,6 +50,14 @@ class GameEnv(gym.Env):
     def get_level_state(self):
         pass
 
+    def get_reward(self):
+        # NOTE: if we use negative reward to jumps, then we should
+        # include a condition "is there a jump in X blocks before current state?"
+        # because otherwise agent will learn to avoid jumping in the moment 
+        # hoping of a future action. This isn't preferable. Moreover, I need 
+        # the opposite: to make a jump in front of an obstacle as early as possible. 
+        pass
+
 
 
 

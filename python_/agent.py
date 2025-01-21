@@ -4,6 +4,7 @@ level matrices, identifying levels, performance evaluation etc.
 Training, loading, deleting, saving, etc. are handled by
 the model itself.
 TODO: So I should cobine agentHelpers and create an agent class.
+TODO: I still need these methods to control the model from agent! I must initiailize a model somewhere.
 '''
 
 def get_actions():
