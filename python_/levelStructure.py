@@ -4,6 +4,7 @@ import torch as th
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
+from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, PATH
 
 # Display more rows (default is 60)
 pd.set_option('display.max_rows', 200)
@@ -17,23 +18,6 @@ pd.set_option('display.width', 1000)
 # Show more characters in each column
 pd.set_option('display.max_colwidth', 2000)
 
-PATH = pathlib.Path(__file__).parent / "levels"
-OBJ_COLUMNS = ['x', 'y', 'rot', 'id']
-HITBOX_COLUMNS = ['x', 'y', 'id', 'w', 'h']
-
-'''
-My game is using hd assets. Dimesnsions of the hd balck cube image are 160x160. 
-Default window is 23 sm in width. Although I didn't find any scaling transformation form PlayLayer while logging the file. 
-But I test the program with hitboxes and I am pretty sure the geometry dash player cube (which should be equal to every other one) is 30x30 axmol positions. 
-This suggestion is solidified wtih the frequency of 30x30 in the objects data (csv file).
-Besides, I see the number of pixels in 1 axmol position is much greater than 1.
-So the images are downscaled probably.
-'''
-ONE_CUBE_SIZE = (30, 30)
-ONE_BLOCK_SIZE = (6, 15) # Turned out GROUND_LAYER_Y is exactly 7 blocks * 15 axmol units!
-BLOCKS_PER_CUBE = (ONE_CUBE_SIZE[0] // ONE_BLOCK_SIZE[0], ONE_CUBE_SIZE[1] // ONE_BLOCK_SIZE[1])
-GROUND_LAYER_Y = 105
-GROUND_OBJ_ID = -1
 
 
 ''' Additions
@@ -42,7 +26,7 @@ isShip()
 isBackwards()
 isDown()
 Ypos()
-YposMax() - a condition to know when to update Ypos (only when the final result is more than previous one)
+maxResult() - tracking the best case. At least necessary for Ypos update.
 
 '''
 
@@ -51,7 +35,7 @@ ADDITIONS = { # matrix index | default value to fill
     'isBackwards': (-2,False),
     'isDown': (-3,False),
     'Ypos': (-4,-2),
-    'YposMax': (-5,-2) # tensors cannot store None
+    'maxResult': (-5,-2) # tensors cannot store None
 }
 
 # TODO: remove this function and update which used it
@@ -62,6 +46,8 @@ basic_levels = {
 # Game's positions are axmol units. They are counted
 # from bottom left corner. They are usually approx pixels.
 
+def get_addition_i(key): # Will be broken automatically if there is no key.
+    return ADDITIONS[key][0]
 
 def create_path(lvl_name, is_hitbox=True, is_init=False, is_csv=False):
     hit = "-hit" if is_hitbox else "-obj"
