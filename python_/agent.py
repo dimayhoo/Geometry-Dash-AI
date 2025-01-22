@@ -220,17 +220,42 @@ class Agent:
         Saves the model to the specified path.
 
         Args:
-            path (str): The file path to save the model.
+            overwrite (bool): If True, overwrites the existing model.
         """
-        model_state = self.model.state_dict()
+        model_name = self.model.__class__.__name__
         if not overwrite:
-            model_name = self.model.__class__.__name__
-            new_model_id = create_model_id(model_name, datetime.now().strftime("%Y%m%d%H%M%S"))
-            path = MODEL_PATH / "{}.pt".format(new_model_id)
-        else: path = MODEL_PATH / self.model_id
+            model_id = create_model_id(model_name)
+            path = MODEL_PATH / f"{model_id}.zip"
+        else:
+            path = MODEL_PATH / f"{self.model_id}.zip"
         
-        th.save(model_state, path)
-        pass
+        self.model.save(str(path))
+        self.model_id = path.name
+
+    def load_model_by_name(self, path, model_name):
+        models = {
+            "ppo": lambda: PPO.load(str(path), env=self.env)
+        }
+        self.model = models[model_name]()
+
+    def load_model(self, model_params=None):
+        """
+        Loads the model from the specified path.
+
+        Args:
+            model_params (dict, optional): Parameters for loading the model.
+        """
+        to_init = model_params.get("to_init", False)
+
+        if to_init:
+            self.model, self.model_id = self.init_model(model_params)
+        else:
+            model_id = model_params["id"]
+            model_name = model_id.split("_")[0]
+            self.model_id = model_id
+            path = MODEL_PATH / f"{model_id}.zip"
+            self.load_model_by_name(path, model_name=model_name)
+            
 
     def load_model(self, model_params=None):
         """

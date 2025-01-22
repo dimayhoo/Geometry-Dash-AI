@@ -22,14 +22,17 @@ BLOCKS_PER_STATE
 STATE_WIDTH
 STATE_HEIGHT'''
 
+''' My way of handling steps
+External: Running agent and storing states, acitons, rewards.
+In the env, extract states in some order (maybe, purely random) from 
+    a some source and using as steps.
+'''
+
 class GameEnv(gym.Env):
-    def __init__(self, lvl_name, state_width, state_height, start_pos):
+    def __init__(self, lvl_id):
         super().__init__()
         self.action_space = spaces.Discrete(2)
         self.observation_space
-        self.state
-        self.state_width
-        self.state_height
 
     def step(self, action):
         pass
