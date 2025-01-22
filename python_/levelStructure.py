@@ -4,7 +4,7 @@ import torch as th
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
-from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, PATH, LAST_GROUND_BLOCK_INDEX
+from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, LEVELS_PATH, LAST_GROUND_BLOCK_INDEX
 from helpers import determine_level_ypos, get_block_index_x, get_block_index_y, get_max_x, get_max_y
 
 # TODO: hwo file import works in python? SHould I increase performance by creating a file "simple saving" 
@@ -64,7 +64,7 @@ def create_path(lvl_name, is_hitbox=True, is_init=False, is_csv=False):
     hit = "-hit" if is_hitbox else "-obj"
     init = "-init" if is_init else ""
     ext = "csv" if is_csv else "pt"
-    return f"{PATH}/{lvl_name}{hit}{init}.{ext}"
+    return f"{LEVELS_PATH}/{lvl_name}{hit}{init}.{ext}"
 
 def get_data_type(obj):
     if 'w' in obj:
@@ -236,5 +236,5 @@ def store_level(data, lvl_id, hitboxes=True, overwrite=True):
     return 1
 
 
-#visualise_level(matrix_path=f"{PATH}/1-hit.pt")
+#visualise_level(matrix_path=f"{LEVELS_PATH}/1-hit.pt")
 #print(create_level_matrix(get_level_data(1)))

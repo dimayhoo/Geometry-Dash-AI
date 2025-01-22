@@ -1,6 +1,7 @@
 import traceback
 import time
 from levelStructure import visualise_level, store_level, decode_level_data
+from agent import init_agent
 
 def game_runner(game):
     try:
@@ -63,5 +64,40 @@ def show_object_position(game, DONE):
         
         else:
             print("PlayLayer isn't initialised in the game still. ")
+
+def play_layer_test(game, DONE):
+    while not DONE:
+        time.sleep(3)
+        playLayer = game.PlayLayer.getInstance()
+        print("PlayLayer is initialised successfully.")
+        if playLayer: 
+            while not DONE:
+                time.sleep(10)
+                playLayer.resetLevel()
+
+                #print("HERE'S:", playLayer.m_bOnGround)
+                
+        
+        else:
+            print("PlayLayer isn't initialised in the game still. ")
+
+
+def main_learning_thread(game, DONE):
+    while not DONE:
+        time.sleep(3)
+        playLayer = game.PlayLayer.getInstance()
+        print("Main learning thread. PlayLayer is initialised successfully.")
+        
+        if playLayer: 
+            agent = init_agent()
+            while not DONE:
+                
+                
+        
+        else:
+            print("PlayLayer isn't initialised in the game still. ")
+
+
+
 
         

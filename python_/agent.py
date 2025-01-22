@@ -6,7 +6,7 @@ level matrices, identifying levels, performance evaluation, and model control.
 Training, loading, deleting, saving, etc., are handled by
 the model itself, but the agent must maintain its instance.
 '''
-
+from datetime import datetime
 from levelStructure import (
     get_block_index_x,
     get_block_index_y,
@@ -23,8 +23,12 @@ from constants import (
     STATE_WIDTH_BLOCKS,
     SHIP_STATE_POSY,
     PLAYER_STATE_POSY,
-    BLOCKS_PER_CUBE
+    BLOCKS_PER_CUBE,
+    MODEL_PATH,
+    LOG_PATH
 )
+from env import GameEnv
+from stable_baselines3 import PPO
 
 # isShip (and likely others) should be the first (ordered) for get_level_frame_state function
 STATE_PARAMS = ["isShip", "isBackwards", "isTopDown"]
@@ -32,25 +36,16 @@ STATE_PARAMS = ["isShip", "isBackwards", "isTopDown"]
 # TODO: maybe algorithmic improvement: not to calculate an action on dead (obstacles)
 # positions. But I think the difference is too low, because their widths are small.
 
-
-def train_model(env, model, n_steps=1000, n_eval_episodes=10):
-    pass
-
-def save_model(model, path):
-    pass
-
-def load_model(path):
-    pass
-
-def evaluate_model(env, model, n_eval_episodes=10):
-    pass
+def create_model_id(model_name="unknown"):
+    return "{}_{}".format(model_name, datetime.now().strftime("%Y%m%d%H%M%S"))
 
 
-
+def init_agent(lvl_id, model_id):
+    return Agent(GameEnv, model_id, lvl_id=lvl_id)
 
 
 class Agent:
-    def __init__(self, env, model):
+    def __init__(self, env, model_params, lvl_id):
         """
         Initializes the Agent with the given environment and model.
 
@@ -59,9 +54,13 @@ class Agent:
             model: The model used for predictions.
         """
         self.env = env
-        self.model = model
+        self.model_id = None # is initialised in self.load_model()
+        self.model = self.load_model(model_params=model_params)
+        self.lvl_id = lvl_id
+        self.lvl_matrix = get_level_data(lvl_id, is_hit=True, is_csv=False, is_init=False)
+        self.A = None
 
-    def update_ypos(self, matrix):
+    def update_ypos(self):
         """
         Updates the Y position in the matrix.
         """
@@ -78,7 +77,7 @@ class Agent:
         '''
         pass
 
-    def handle_ypos(self, matrix, result, action_array):
+    def handle_ypos(self, result, action_array):
         """
         Handles the Y position based on the result and action array.
 
@@ -87,9 +86,9 @@ class Agent:
             result (float): The current result to evaluate.
             action_array (list): The array of actions taken.
         """
-        maxResult = matrix[get_addition_i('maxResult'), 0]
+        maxResult = self.lvl_matrix[get_addition_i('maxResult'), 0]
         if result > maxResult:
-            self.update_ypos(matrix, action_array)
+            self.update_ypos(self.lvl_matrix, action_array)
 
     def get_action(self, state, random=False):
         """
@@ -109,7 +108,7 @@ class Agent:
 
     # TODO: maybe to create cache for getting states. I think it's not a reasonable 
     # boost (accessing matrix isn't so hard as memory required to save every state)
-    def get_lvl_frame_state(self, matrix, coli, params):
+    def get_lvl_frame_state(self, coli, params):
         """
         Retrieves the level frame state from the matrix.
 
@@ -123,18 +122,18 @@ class Agent:
         """
         is_ship = params[0] # ! is ship.
         level_ypos_i = get_addition_i("levelYPos")[0]
-        ypos = matrix[level_ypos_i, coli]
+        ypos = self.lvl_matrix[level_ypos_i, coli]
         starting_block = ypos - (SHIP_STATE_POSY if is_ship else PLAYER_STATE_POSY) 
 
         # TODO: if the a state overlaps (> x max) ending of a layer?
         endingX = coli + STATE_WIDTH_BLOCKS # exclusive
         endingY = starting_block + STATE_HEIGHT_BLOCKS # exclusive
 
-        return matrix[starting_block:endingY, coli:endingX], ((starting_block, coli), (endingX, endingY)) 
+        return self.lvl_matrix[starting_block:endingY, coli:endingX], ((starting_block, coli), (endingX, endingY)) 
 
     # NOTE: a state consists of many parameters, not only level data.
     # NOTE: state is a tuple with tensor matrix and tensor array
-    def get_state(self, matrix, coli):
+    def get_state(self, coli):
         """
         Constructs the state from the current matrix and column index.
 
@@ -148,9 +147,9 @@ class Agent:
         other_params = th.zeros(len(STATE_PARAMS))
         for i, arg in enumerate(STATE_PARAMS):
             arg_i = get_addition_i(arg)[0]
-            other_params[i] = matrix[arg_i, coli]
+            other_params[i] = self.lvl_matrix[arg_i, coli]
             
-        lvl_frame = self.get_lvl_frame_state(matrix, coli, other_params) 
+        lvl_frame = self.get_lvl_frame_state(self.lvl_matrix, coli, other_params) 
 
         return (lvl_frame, other_params)
 
@@ -170,7 +169,7 @@ class Agent:
         """
         return th.zeros((batch_size, ncols))
 
-    def get_actions_matrix(self, lvl_matrix, ncols, batch_size=BATCH_SIZE):
+    def create_actions_matrix(self, ncols, batch_size=BATCH_SIZE):
         """
         Generates the actions matrix based on the level matrix.
 
@@ -183,14 +182,20 @@ class Agent:
             torch.Tensor: The actions matrix.
         """
         A = self.create_dummy_action_matrix(ncols)
+        done_A = A.clone() # matrix to track done actions in cpp
 
         for rowi in range(batch_size):
             for coli in range(ncols):
-                state = self.get_state(lvl_matrix, coli)
+                state = self.get_state(coli)
                 action = self.get_action(state)
             A[rowi, coli] = action # state can always be derived, so no need to store it.
 
-        return A
+        self.A = A
+    
+    def get_actions_matrix(self, ncols, batch_size=BATCH_SIZE):
+        if self.A is None:
+            self.create_actions_matrix(ncols, batch_size)
+        return self.A
 
     def train_model(self, n_steps=1000, n_eval_episodes=10):
         """
@@ -202,23 +207,45 @@ class Agent:
         """
         pass
 
-    def save_model(self, path):
+    def init_model(self, model_params):
+        model_name = model_params["name"]
+        if model_name == "PPO": model = PPO()
+
+        model_id = create_model_id(model_name)
+        return model, model_id
+
+    #TODO: entire mdoel or state dict
+    def save_model(self, overwrite=False):
         """
         Saves the model to the specified path.
 
         Args:
             path (str): The file path to save the model.
         """
+        model_state = self.model.state_dict()
+        if not overwrite:
+            model_name = self.model.__class__.__name__
+            new_model_id = create_model_id(model_name, datetime.now().strftime("%Y%m%d%H%M%S"))
+            path = MODEL_PATH / "{}.pt".format(new_model_id)
+        else: path = MODEL_PATH / self.model_id
+        
+        th.save(model_state, path)
         pass
 
-    def load_model(self, path):
+    def load_model(self, model_params=None):
         """
         Loads the model from the specified path.
 
         Args:
             path (str): The file path from which to load the model.
         """
-        pass
+        to_init = model_params.get("to_init", False)
+
+        if to_init:
+            self.model, self.model_id = self.init_model(model_params)
+        else:
+            model_id = model_params["id"]
+            self.model, self.model_id = th.load(MODEL_PATH / model_id), model_id
 
     def evaluate_model(self, n_eval_episodes=10):
         """
@@ -227,4 +254,7 @@ class Agent:
         Args:
             n_eval_episodes (int, optional): Number of evaluation episodes. Defaults to 10.
         """
+        pass
+
+    def replace_model(self):
         pass

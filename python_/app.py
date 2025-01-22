@@ -4,15 +4,16 @@ import traceback
 import threading
 from package_init import package_init
 from levelStructure import decode_level_data, store_level, visualise_level
-from threads import game_runner, test_worker, save_level_worker, show_object_position
+from threads import game_runner, test_worker, save_level_worker, show_object_position, play_layer_test
 
 game = package_init()
 DONE = False
 
 def initialise_threads(game, app):
     #threading.Thread(target=test_worker, args=(game, app, DONE), daemon=True).start()
-    threading.Thread(target=save_level_worker, args=(game, DONE, True), daemon=True).start()
+    #threading.Thread(target=save_level_worker, args=(game, DONE, True), daemon=True).start()
     #threading.Thread(target=show_object_position, args=(game, DONE), daemon=True).start()
+    #threading.Thread(target=play_layer_test, args=(game, DONE), daemon=True).start()
 
     return 1
 

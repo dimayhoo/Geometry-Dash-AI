@@ -1,6 +1,7 @@
 import pathlib
 
-PATH = pathlib.Path(__file__).parent / "levels"
+DIR_PATH = pathlib.Path(__file__).parent 
+LEVELS_PATH = DIR_PATH / "levels"
 OBJ_COLUMNS = ['x', 'y', 'rot', 'id']
 HITBOX_COLUMNS = ['x', 'y', 'id', 'w', 'h']
 
@@ -31,3 +32,6 @@ STATE_HEIGHT_BLOCKS = ONE_CUBE_SIZE[1] * 4 // ONE_BLOCK_SIZE[1] # 3 cubes + 1 fo
 # a state with right side. It's not inside one of the state's blocks.
 PLAYER_STATE_POSY = ONE_CUBE_SIZE[1] * 1 // ONE_BLOCK_SIZE[1] # NOTE: 2 index is the third block from the bottom
 SHIP_STATE_POSY = STATE_HEIGHT_BLOCKS // 2 - 1 # -1 is irrelevant because all numbers are even, but still I leave a "middle" here 
+
+LOG_PATH = DIR_PATH / "training" / "logs"
+MODEL_PATH = DIR_PATH / "training" / "models"

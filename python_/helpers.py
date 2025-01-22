@@ -19,7 +19,7 @@ def get_max_x(Nc, x_block=ONE_BLOCK_SIZE[0]):
 def get_max_y(Nr, y_block=ONE_BLOCK_SIZE[1]):
     return Nr * y_block
 
-def determine_level_ypos(column, prev_ypos, limit=get_block_index_y(ONE_CUBE_SIZE * CUBE_TIMES_JUMPER_JUMP)):
+def determine_level_ypos(column, prev_ypos, limit=get_block_index_y(ONE_CUBE_SIZE[1] * CUBE_TIMES_JUMPER_JUMP)):
     # I don't use binary search, because the Ypos isn't high always.
 
     i = 0
