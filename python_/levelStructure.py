@@ -4,7 +4,7 @@ import torch as th
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
-from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, LEVELS_PATH, LAST_GROUND_BLOCK_INDEX
+from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, LEVELS_PATH, LAST_GROUND_BLOCK_INDEX, BLOCKS_PER_STATE_WIDTH, PADDING_OBJ_ID
 from helpers import determine_level_ypos, get_block_index_x, get_block_index_y, get_max_x, get_max_y
 
 # TODO: hwo file import works in python? SHould I increase performance by creating a file "simple saving" 
@@ -159,6 +159,7 @@ def create_default_matrix(df, number_of_additions=len(ADDITIONS)):
     Nr = y_max // y_block + bool(y_max % y_block)
 
     Nr += number_of_additions # for special params
+    Nc += BLOCKS_PER_STATE_WIDTH
 
     # y is the number of rows and x is the number of columns
     return th.zeros((int(Nr), int(Nc)))
@@ -166,6 +167,10 @@ def create_default_matrix(df, number_of_additions=len(ADDITIONS)):
 def fill_groud_layer(matrix, ground_layer_y=GROUND_LAYER_Y, ground_obj_id=GROUND_OBJ_ID):
     matrix[:get_block_index_y(ground_layer_y) + 1, :] = ground_obj_id # y index is exclusive
 
+    return matrix
+
+def fill_padding(matrix):
+    matrix[:, -BLOCKS_PER_STATE_WIDTH:] = PADDING_OBJ_ID
     return matrix
 
 def fill_level_ypos(matrix):
@@ -188,6 +193,8 @@ def create_level_matrix(df, columns=HITBOX_COLUMNS):
 
     # Filling objects
     matrix = fill_groud_layer(matrix)
+
+    matrix = fill_padding(matrix)
 
     for _, obj in df[columns].iterrows():
         x, y, id, w, h = obj
