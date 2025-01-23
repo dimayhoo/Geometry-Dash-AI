@@ -1,7 +1,7 @@
 import traceback
 import time
 from levelStructure import visualise_level, store_level, decode_level_data
-from agent import init_agent
+from agent import Agent
 
 def game_runner(game):
     try:
@@ -40,6 +40,7 @@ def save_level_worker(game, DONE, hitboxes):
                 lvl_data = playLayer.getLevelData()
 
             store_level(lvl_data, lvl_id=lvl_id, hitboxes=hitboxes)
+            print("Level was stored successfully.")
             return 1
         
         else:
@@ -89,8 +90,9 @@ def main_learning_thread(game, DONE):
         print("Main learning thread. PlayLayer is initialised successfully.")
         
         if playLayer: 
-            agent = init_agent()
+            #agent = init_agent()
             while not DONE:
+                time.sleep(1)
                 
                 
         

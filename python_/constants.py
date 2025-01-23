@@ -19,7 +19,7 @@ ONE_BLOCK_SIZE = (6, 15) # Turned out GROUND_LAYER_Y is exactly 7 blocks * 15 ax
 BLOCKS_PER_CUBE = (ONE_CUBE_SIZE[0] // ONE_BLOCK_SIZE[0], ONE_CUBE_SIZE[1] // ONE_BLOCK_SIZE[1])
 GROUND_LAYER_Y = 105
 GROUND_OBJ_ID = -1
-PADDING_OBJ_ID = -25 # Random. I don't know a better number. They are all integers of 4 bytes!!! You can use -10000 and it will takes the same size. 
+PADDING_OBJ_ID = -25 # Random. I don't know a better number. They are all integers of 4 bytes!!! You can use -10000 and it will takes the same size. The only restriction is low/high bounds in the observation space.
 CUBE_TIMES_JUMPER_JUMP = 5 # about 4.5-4.85, definitely less than 5
 LAST_GROUND_BLOCK_INDEX = GROUND_LAYER_Y // ONE_BLOCK_SIZE[1] - (not GROUND_LAYER_Y % ONE_BLOCK_SIZE[1]) # 7 blocks
 
@@ -28,7 +28,7 @@ BATCH_SIZE = 10
 # NOTE: the height of one jump is 3 cubes. But there are also ring and high jumpers!!! 
 STATE_WIDTH_BLOCKS = ONE_CUBE_SIZE[0] * 5 // ONE_BLOCK_SIZE[0]
 STATE_HEIGHT_BLOCKS = ONE_CUBE_SIZE[1] * 7 // ONE_BLOCK_SIZE[1] # 3 cubes original jump + 3 cubes possible jumper or ring jumper + 1 for ground
-BLOCKS_PER_STATE_WIDTH = STATE_WIDTH_BLOCKS // ONE_BLOCK_SIZE[0]
+PADDING_X_BLOCKS = STATE_WIDTH_BLOCKS
 
 # NOTE: this is player's pos, but the cube of the player only touches
 # a state with right side. It's not inside one of the state's blocks.
@@ -37,3 +37,5 @@ SHIP_STATE_POSY = STATE_HEIGHT_BLOCKS // 2 - 1 # -1 is irrelevant because all nu
 
 LOG_PATH = DIR_PATH / "training" / "logs"
 MODEL_PATH = DIR_PATH / "training" / "models"
+
+

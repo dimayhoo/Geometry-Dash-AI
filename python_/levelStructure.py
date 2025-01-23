@@ -4,7 +4,7 @@ import torch as th
 import pandas as pd
 import pathlib
 import matplotlib.pyplot as plt
-from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, LEVELS_PATH, LAST_GROUND_BLOCK_INDEX, BLOCKS_PER_STATE_WIDTH, PADDING_OBJ_ID
+from constants import ONE_BLOCK_SIZE, GROUND_LAYER_Y, GROUND_OBJ_ID, HITBOX_COLUMNS, OBJ_COLUMNS, LEVELS_PATH, LAST_GROUND_BLOCK_INDEX, PADDING_OBJ_ID, PADDING_X_BLOCKS
 from helpers import determine_level_ypos, get_block_index_x, get_block_index_y, get_max_x, get_max_y
 
 # TODO: hwo file import works in python? SHould I increase performance by creating a file "simple saving" 
@@ -57,7 +57,9 @@ basic_levels = {
 # Game's positions are axmol units. They are counted
 # from bottom left corner. They are usually approx pixels.
 
-def get_addition_i(key): # Will be broken automatically if there is no key.
+def get_addition_i(key, with_value=False): # Will be broken automatically if there is no key.
+    if with_value:
+        return ADDITIONS[key]
     return ADDITIONS[key][0]
 
 def create_path(lvl_name, is_hitbox=True, is_init=False, is_csv=False):
@@ -159,7 +161,7 @@ def create_default_matrix(df, number_of_additions=len(ADDITIONS)):
     Nr = y_max // y_block + bool(y_max % y_block)
 
     Nr += number_of_additions # for special params
-    Nc += BLOCKS_PER_STATE_WIDTH
+    Nc += PADDING_X_BLOCKS
 
     # y is the number of rows and x is the number of columns
     return th.zeros((int(Nr), int(Nc)))
@@ -170,12 +172,12 @@ def fill_groud_layer(matrix, ground_layer_y=GROUND_LAYER_Y, ground_obj_id=GROUND
     return matrix
 
 def fill_padding(matrix):
-    matrix[:, -BLOCKS_PER_STATE_WIDTH:] = PADDING_OBJ_ID
+    matrix[:, -PADDING_X_BLOCKS:] = PADDING_OBJ_ID
     return matrix
 
 def fill_level_ypos(matrix):
-    level_ypos_rowi, default_level_ypos = get_addition_i('levelYPos')
-    ypos_rowi, default_ypos = get_addition_i('Ypos')
+    level_ypos_rowi, default_level_ypos = get_addition_i('levelYPos', with_value=True)
+    ypos_rowi, default_ypos = get_addition_i('Ypos', with_value=True)
     prev_ypos = LAST_GROUND_BLOCK_INDEX + 1 # prevpos is for a slight optimisation.
 
     for j in range(matrix.shape[1]):
