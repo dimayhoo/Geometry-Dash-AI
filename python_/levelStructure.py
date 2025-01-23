@@ -30,6 +30,10 @@ pd.set_option('display.max_colwidth', 2000)
 # receiving it as a parameter in the moment.
 ''' Additions
 
+- Basically the idea of stroing them isn't good, because it implies straightforwardness, 
+    but it's okay for regular (not exostic, custom) levels and for my case. 
+    Otherwise one should train an agent with ids of different portals extensively, what I am lazy to implement.
+
 isShip()
 isBackwards()
 isTopDown()

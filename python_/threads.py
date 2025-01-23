@@ -2,6 +2,7 @@ import traceback
 import time
 from levelStructure import visualise_level, store_level, decode_level_data
 from agent import Agent
+import queue
 
 def game_runner(game):
     try:
@@ -82,22 +83,65 @@ def play_layer_test(game, DONE):
         else:
             print("PlayLayer isn't initialised in the game still. ")
 
-
+    
 def main_learning_thread(game, DONE):
+    """ NOTE: Functionality (game loop)
+    This is continuous game loop. Observing, learning, etc works by agent status.
+    In other words, I call callback -> agent starts learning -> agent completed that ->
+    changes status to "ready" -> loop continues -> ... -> epoches completed (done) ->
+    model and any important info saved -> closure.
+    """
+
+    print("Main learning thread is initialised. ")
+
+    def agent_worker():
+        while not DONE:
+            if agent.status == "done":
+                return 1
+            
+            elif agent.status == "ready":
+                game_data = agent.get_game_input()
+                game.handle_observing(game_data, agent_callback)
+                print("Starting the observing process.")
+                agent.status = "observing"
+            
+            else: # agent.status == "observing" or "training"
+                try:
+                    data = observation_queue.get(timeout=1)
+                    agent.handle_game_observations(data) # here will be training
+                except queue.Empty:
+                    continue
+
+    def agent_callback(data):
+        observation_queue.put(data)
+
+    playLayer = None
     while not DONE:
-        time.sleep(3)
+        time.sleep(1)
+        # O(1) fn's computation
         playLayer = game.PlayLayer.getInstance()
-        print("Main learning thread. PlayLayer is initialised successfully.")
-        
-        if playLayer: 
-            #agent = init_agent()
-            while not DONE:
-                time.sleep(1)
-                
-                
-        
-        else:
-            print("PlayLayer isn't initialised in the game still. ")
+        if playLayer is not None:
+            break
+    
+    if playLayer is None: return 0
+    print("PlayLayer is initialised successfully. ")
+
+    observation_queue = queue.Queue()
+
+    model_params = {
+        "name": "ppo",
+        "to_init": True
+    }
+    lvl_id = playLayer.getLevelId() 
+
+    # NOTE: if PlayLayer breaks, then the entire obervation process,
+    # learning process and other agent functions break completely.
+    agent = Agent(model_params=model_params, lvl_id=lvl_id)
+
+    status = agent_worker() # in any way, agent stop working
+    # TODO: ensuring agent saved everything (and closed everything) + callback to stop game from running (close all threads)...
+    
+            
 
 
 

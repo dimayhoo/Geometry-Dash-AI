@@ -42,6 +42,14 @@ COMMON_ENV_DATA = {
     "other_params_len": len(STATE_PARAMS)
 }
 
+TRACKING_PARAMS = {
+    "ypos": 0,
+    "canAct": 1,
+    "isShip": 2,
+    "isBackwards": 3,
+    "isTopDown": 4
+}
+
 # TODO: maybe algorithmic improvement: not to calculate an action on dead (obstacles)
 # positions. But I think the difference is too low, because their widths are small.
 
@@ -49,7 +57,7 @@ def create_model_id(model_name="unknown"):
     return "{}_{}".format(model_name, datetime.now().strftime("%Y%m%d%H%M%S"))
 
 class Agent:
-    def __init__(self, model_params, lvl_id, additional_env_data={}):
+    def __init__(self, model_params, lvl_id, additional_env_data={}, rl_data={}):
         """
         Initializes the Agent with the given environment and model.
         - Order of the self variables matter!
@@ -58,6 +66,7 @@ class Agent:
             env (gym.Env): The environment instance.
             model: The model used for predictions.
         """
+        self.epochs = rl_data.get("epochs", 1)
         self.env = None
         self.model = None
         self.lvl_id = lvl_id
@@ -68,6 +77,8 @@ class Agent:
         self.model_id = None # is initialised in self.load_model()
         self.load_model(model_params=model_params)
         self.A = None
+        self.status = "ready" # or "training", "observing" and "done" (all epoches ran)
+        
 
     def init_env(self, additional_env_data={}):
         env_data = {
@@ -248,6 +259,16 @@ class Agent:
         if self.A is None:
             self.create_actions_matrix(batch_size)
         return self.A
+    
+    def get_game_input(self):
+        Nparams = len(TRACKING_PARAMS)
+
+        A = self.get_actions_matrix()
+        lvl_track_params = th.zeros((Nparams, self.ncols), dtype=th.int16)
+        return A, lvl_track_params
+    
+    def handle_game_observations():
+        pass
 
     def train_model(self, n_steps=1000, n_eval_episodes=10):
         """
