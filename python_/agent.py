@@ -26,7 +26,7 @@ from constants import (
     STATE_WIDTH_BLOCKS,
     SHIP_STATE_POSY,
     PLAYER_STATE_POSY,
-    BLOCKS_PER_CUBE,
+    ONE_BLOCK_SIZE,
     MODEL_PATH,
     LOG_PATH,
     PADDING_X_BLOCKS
@@ -264,10 +264,22 @@ class Agent:
         Nparams = len(TRACKING_PARAMS)
 
         A = self.get_actions_matrix()
-        lvl_track_params = th.zeros((Nparams, self.ncols), dtype=th.int16)
-        return A, lvl_track_params
+        lvl_track_params = {}
+        for key in STATE_PARAMS:
+            lvl_track_params[key] = {
+                "prev": 0,
+                "values": np.array()
+            }
+
+        # Maybe, into a dict?
+        return [
+            A,
+            lvl_track_params,
+            ONE_BLOCK_SIZE
+        ]
     
-    def handle_game_observations():
+    def handle_game_observations(data):
+        print("Agent. Data is received as:", data)
         pass
 
     def train_model(self, n_steps=1000, n_eval_episodes=10):
@@ -350,3 +362,18 @@ class Agent:
 
     def replace_model(self):
         pass
+
+
+class SimpleTracker():
+    def __init__(self):
+        """
+        A light weighted class to track states and results.
+        All functionality is handling a current state
+
+        Functions:
+            - converts player's position in blocks
+            - tracks TRACKING_PARAMS
+            - tracks death position
+        """
+        pass
+    

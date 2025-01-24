@@ -3,6 +3,7 @@ import time
 from levelStructure import visualise_level, store_level, decode_level_data
 from agent import Agent
 import queue
+import numpy as np
 
 def game_runner(game):
     try:
@@ -74,8 +75,9 @@ def play_layer_test(game, DONE):
         print("PlayLayer is initialised successfully.")
         if playLayer: 
             while not DONE:
-                time.sleep(10)
-                playLayer.resetLevel()
+                time.sleep(2)
+                playLayer._pauseUpdate = True if not playLayer._pauseUpdate else False
+                #playLayer.resetLevel()
 
                 #print("HERE'S:", playLayer.m_bOnGround)
                 
@@ -101,13 +103,14 @@ def main_learning_thread(game, DONE):
             
             elif agent.status == "ready":
                 game_data = agent.get_game_input()
-                game.handle_observing(game_data, agent_callback)
+                playLayer.handle_observing(game_data, agent_callback)
                 print("Starting the observing process.")
                 agent.status = "observing"
             
             else: # agent.status == "observing" or "training"
                 try:
                     data = observation_queue.get(timeout=1)
+                    # TODO: pausing playlayer (I suspect by setting _pauseUpdate to true)
                     agent.handle_game_observations(data) # here will be training
                 except queue.Empty:
                     continue
@@ -142,7 +145,71 @@ def main_learning_thread(game, DONE):
     # TODO: ensuring agent saved everything (and closed everything) + callback to stop game from running (close all threads)...
     
             
+def test_gameData(game, DONE):
+    while not DONE:
+        time.sleep(2)
+        gameData = game.GameData.getInstance()
+        print("GameData is initialised successfully.")
+        break
 
+    my_dict = {
+        "key1": {
+            "prev": False,
+            "values": [1, 2, 3]
+        },
+        "key2": {
+            "prev": True,
+            "values": [234, 234, 234]
+        }
+    }
+    gameData.setWholeDict({
+        "key1": [False, [1, 2, 3]],
+        "key2": {
+            "prev": True,
+            "values": [234, 234, 234]
+        },
+        "key3": {
+            "prev": True,
+            "values": np.random.randint(0, 10, (5, ))
+        }
+    })
+    print("Whole dict is set successfully.")
+
+    my_dict_cpp = gameData.getWholeDict()
+    print(my_dict_cpp.get("key3"))
+    print(my_dict_cpp.get("key3").get("values")[0])
+
+    matA = np.random.randint(0, 10, (3, 3)) 
+    matB = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    matC = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    gameData.setAllMatrices(matA, matB, matC)
+    print("All matrices are set successfully.")
+
+    print(gameData.getAllMatrices())
+    
+    color = "red"
+    def simple_callback():
+        print("The color is:", color)
+    
+    gameData.setCallback(simple_callback)
+    print("Callback is set successfully.")
+
+    gameData.doCallback()
+
+
+    '''while not DONE:
+        time.sleep(3)
+        playLayer = game.PlayLayer.getInstance()
+        print("PlayLayer is initialised successfully.")
+        if playLayer: 
+            while not DONE:
+                time.sleep(0.016)
+                game_data = playLayer.getGameData()
+                print(game_data)
+                
+        
+        else:
+            print("PlayLayer isn't initialised in the game still. ")'''
 
 
 
