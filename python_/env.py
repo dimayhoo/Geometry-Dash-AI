@@ -41,7 +41,7 @@ class GameEnv(gym.Env):
                 dtype=env_data["state_dtype"]),
             "other_params": spaces.MultiBinary(env_data["other_params_len"])
         })
-        self.states_data = None
+        self.observations_data = None
         self.state = None
         self.lvl_id = lvl_id # TODO: probably useless
 

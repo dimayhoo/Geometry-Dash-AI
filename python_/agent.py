@@ -102,18 +102,73 @@ class Agent:
         '''
         pass
 
-    def handle_ypos(self, result, action_array):
-        """
-        Handles the Y position based on the result and action array.
+    def process_params(self, data):
+        filt_params = {}
+        for p in TRACKING_PARAMS: filt_params[p] = []
 
-        Args:
-            matrix (torch.Tensor): The level matrix.
-            result (float): The current result to evaluate.
-            action_array (list): The array of actions taken.
+        # V is a dict of prev and values.
+        for key, V in data.items():
+            values_per_row = []
+            prev = -1
+            values_cur = []
+            n = 0
+            for val in V["values"]:
+                if val > prev:
+                    values_cur.append(val)
+                    prev = val
+                else:
+                    n = max(len(values_cur), n)
+                    values_per_row.append(values_cur)
+                    values_cur = [val]
+                    prev = val
+
+            i = 0
+            values = []
+            while i < n:
+                values.append(min(values_per_row[j][i] for j in \
+                                  range(self.batch_size)))
+
+            filt_params[key] = values
+
+        return filt_params
+        '''maxval = -1
+        i = 0
+        for val in V["values"]:
+            if val > maxval:
+                filt_params[key].append(val)
+                
+            else:
+                filt_params[i] = min(filt_params[i], val)
+                i += 1'''
+        
+    def handle_params_update(self, data):
         """
-        maxResult = self.lvl_matrix[get_addition_i('maxResult'), 0]
-        if result > maxResult:
-            self.update_ypos(self.lvl_matrix, action_array)
+        Updates ypos.
+        Updates tracked parameters.
+        """
+        
+        '''filt_params = self.process_params(data["tracking_params_dict"])
+        params = [0] * len(TRACKING_PARAMS)
+        yposi = get_addition_i("yPos")
+
+        for j in range(self.ncols):
+            self.lvl_matrix[yposi][j] = data["y_pos_array_best"][j]
+            
+            for i, key in enumerate(TRACKING_PARAMS):
+                if not filt_params[key]:
+                    del filt_params[key]
+
+                if filt_params[key][0] == j:
+                    params[i] = not params[i]
+                    filt_params.pop(0)
+
+                self.lvl_matrix[get_addition_i(key)][j] = params[i]'''
+
+
+        
+        
+
+        
 
     def get_action(self, obs, random=False):
         """
@@ -273,9 +328,25 @@ class Agent:
             "trackingParams": TRACKING_PARAMS
         }
     
-    def handle_game_observations(data):
-        print("Agent. Data is received as:", data)
-        pass
+    def handle_game_observations(self, data):
+        print("Agent. Data is received.")
+        print(data["deadPositions"])
+        print(len(data["matrices"]["yPosMatrix"]))
+        print(data["matrices"]["yPosMatrix"][0][:100])
+
+        '''
+        max_result = np.max(data["deadPositions"])
+        prev_max_result = self.lvl_matrix[get_addition_i('maxResult'), 0]
+        
+        if max_result > prev_max_result:
+            best_result_i = np.argmax(data["deadPositions"])
+            
+            tracking_data = {
+                "y_pos_array_best": data["matrices"]["yPosMatrix"][best_result_i],
+                "tracking_params_dict": data["trackingParams"]
+            }
+            
+            self.handle_params_update(tracking_data)'''
 
     def train_model(self, n_steps=1000, n_eval_episodes=10):
         """
@@ -288,8 +359,8 @@ class Agent:
         pass
 
     def init_model(self, model_params):
-        model_name = model_params["name"]
-        if model_name == "PPO": 
+        model_name = model_params["name"].lower()
+        if model_name == "ppo": 
             model = PPO(policy="MultiInputPolicy", env=self.env, tensorboard_log=LOG_PATH)
 
         self.model_id = create_model_id(model_name)
@@ -359,16 +430,3 @@ class Agent:
         pass
 
 
-class SimpleTracker():
-    def __init__(self):
-        """
-        A light weighted class to track states and results.
-        All functionality is handling a current state
-
-        Functions:
-            - converts player's position in blocks
-            - tracks TRACKING_PARAMS
-            - tracks death position
-        """
-        pass
-    

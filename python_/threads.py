@@ -75,9 +75,23 @@ def play_layer_test(game, DONE):
         print("PlayLayer is initialised successfully.")
         if playLayer: 
             while not DONE:
+                # It seems pause and reset work effortlessly.
+                time.sleep(3)
+                #playLayer._pauseUpdate = True if not playLayer._pauseUpdate else False
+                playLayer.resetLevel()
+
                 time.sleep(2)
-                playLayer._pauseUpdate = True if not playLayer._pauseUpdate else False
-                #playLayer.resetLevel()
+                playLayer.setPauseUpdate(True)
+
+                time.sleep(1)
+                playLayer.setPauseUpdate(False)
+
+                time.sleep(2)
+                playLayer.setPauseUpdate(True)
+
+                time.sleep(1)
+                #playLayer.resetLevel() # - merely reset doesn't stop game's pause
+                playLayer.setPauseUpdate(False)
 
                 #print("HERE'S:", playLayer.m_bOnGround)
                 
@@ -102,6 +116,7 @@ def main_learning_thread(game, DONE):
                 return 1
             
             elif agent.status == "ready":
+                #gameDataInstance.reset(True) # clean start
                 game_data = agent.get_game_input()
                 gameDataInstance.initGameData(game_data, agent_callback)
                 print("Starting the observing process.")
@@ -116,6 +131,7 @@ def main_learning_thread(game, DONE):
                     continue
 
     def agent_callback(data):
+        print("Callback has been called. ")
         observation_queue.put(data)
 
     gameDataInstance = None
@@ -147,7 +163,7 @@ def main_learning_thread(game, DONE):
 
     # NOTE: if PlayLayer breaks, then the entire obervation process,
     # learning process and other agent functions break completely.
-    agent = Agent(model_params=model_params, lvl_id=lvl_id)
+    agent = Agent(model_params=model_params, lvl_id=lvl_id,rl_data={"batch_size": 2})
 
     status = agent_worker() # in any way, agent stop working
     # TODO: ensuring agent saved everything (and closed everything) + callback to stop game from running (close all threads)...
