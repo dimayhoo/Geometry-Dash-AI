@@ -35,20 +35,14 @@ from env import GameEnv
 from stable_baselines3 import PPO
 
 # isShip (and likely others) should be the first (ordered) for get_level_frame_state function
-STATE_PARAMS = ["isShip", "isBackwards", "isTopDown"]
+STATE_PARAMS = ["isShip", "touchedRingObject", "isGravityFlipped"]
 COMMON_ENV_DATA = {
     "state_shape": (STATE_HEIGHT_BLOCKS, STATE_WIDTH_BLOCKS),
     "state_dtype": np.float32, # np is required for stable baselines model
     "other_params_len": len(STATE_PARAMS)
 }
 
-TRACKING_PARAMS = {
-    "ypos": 0,
-    "canAct": 1,
-    "isShip": 2,
-    "isBackwards": 3,
-    "isTopDown": 4
-}
+TRACKING_PARAMS = ["isShip", "isGravityFlipped", "touchedRingObject"]
 
 # TODO: maybe algorithmic improvement: not to calculate an action on dead (obstacles)
 # positions. But I think the difference is too low, because their widths are small.
@@ -67,6 +61,7 @@ class Agent:
             model: The model used for predictions.
         """
         self.epochs = rl_data.get("epochs", 1)
+        self.batch_size = rl_data.get("batch_size", BATCH_SIZE)
         self.env = None
         self.model = None
         self.lvl_id = lvl_id
@@ -229,7 +224,7 @@ class Agent:
         """
         return th.zeros((batch_size, ncols), dtype=th.int16)
 
-    def create_actions_matrix(self, batch_size=BATCH_SIZE):
+    def create_actions_matrix(self):
         """
         Generates the actions matrix based on the level matrix.
 
@@ -241,10 +236,10 @@ class Agent:
         Returns:
             torch.Tensor: The actions matrix.
         """
-        A = self.create_dummy_action_matrix(self.ncols, batch_size=batch_size)
+        A = self.create_dummy_action_matrix(self.ncols, batch_size=self.batch_size)
         done_A = A.clone() # matrix to track done actions in cpp
 
-        for rowi in range(batch_size):
+        for rowi in range(self.batch_size):
             for coli in range(self.ncols):
                 np_obs = self.get_state(coli)
                 #print(np_state)
@@ -255,28 +250,28 @@ class Agent:
 
         self.A = A
     
-    def get_actions_matrix(self, batch_size=BATCH_SIZE):
+    def get_actions_matrix(self):
         if self.A is None:
-            self.create_actions_matrix(batch_size)
+            self.create_actions_matrix()
         return self.A
     
     def get_game_input(self):
         Nparams = len(TRACKING_PARAMS)
 
-        A = self.get_actions_matrix()
-        lvl_track_params = {}
+        actionsMatrix = self.get_actions_matrix()
+        '''lvl_track_params = {}
         for key in STATE_PARAMS:
             lvl_track_params[key] = {
                 "prev": 0,
                 "values": np.array()
-            }
+            }'''
 
         # Maybe, into a dict?
-        return [
-            A,
-            lvl_track_params,
-            ONE_BLOCK_SIZE
-        ]
+        return {
+            "actionsMatrix": actionsMatrix,
+            "oneBlockSize": ONE_BLOCK_SIZE,
+            "trackingParams": TRACKING_PARAMS
+        }
     
     def handle_game_observations(data):
         print("Agent. Data is received as:", data)

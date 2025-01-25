@@ -103,7 +103,7 @@ def main_learning_thread(game, DONE):
             
             elif agent.status == "ready":
                 game_data = agent.get_game_input()
-                playLayer.handle_observing(game_data, agent_callback)
+                gameDataInstance.initGameData(game_data, agent_callback)
                 print("Starting the observing process.")
                 agent.status = "observing"
             
@@ -117,6 +117,14 @@ def main_learning_thread(game, DONE):
 
     def agent_callback(data):
         observation_queue.put(data)
+
+    gameDataInstance = None
+    while not DONE: 
+        time.sleep(1)
+        # O(1) fn's computation
+        gameDataInstance = game.GameData.getInstance()
+        if gameDataInstance is not None:
+            break
 
     playLayer = None
     while not DONE:
@@ -162,7 +170,12 @@ def test_gameData(game, DONE):
             "values": [234, 234, 234]
         }
     }
-    gameData.setWholeDict({
+
+    actionsMatrix = np.random.randint(0, 1, (3, 3))
+    oneBlockSize = (6, 15)
+
+
+    '''gameData.setWholeDict({
         "key1": [False, [1, 2, 3]],
         "key2": {
             "prev": True,
@@ -185,7 +198,7 @@ def test_gameData(game, DONE):
     gameData.setAllMatrices(matA, matB, matC)
     print("All matrices are set successfully.")
 
-    print(gameData.getAllMatrices())
+    print(gameData.getAllMatrices())'''
     
     color = "red"
     def simple_callback():

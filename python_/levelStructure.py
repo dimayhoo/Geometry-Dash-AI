@@ -35,8 +35,8 @@ pd.set_option('display.max_colwidth', 2000)
     Otherwise one should train an agent with ids of different portals extensively, what I am lazy to implement.
 
 isShip()
-isBackwards()
-isTopDown()
+touchedRingObject()
+isGravityFlipped()
 Ypos()
 maxResult() - tracking the best case. At least necessary for Ypos update.
 levelYPos() - ypos which is derived from the level data.
@@ -46,8 +46,8 @@ levelYPos() - ypos which is derived from the level data.
 # TODO: maybe, to process these as consts.
 ADDITIONS = { # matrix row index | default value to fill
     'isShip': (-1,False),
-    'isBackwards': (-2,False),
-    'isTopDown': (-3,False),
+    'touchedRingObject': (-2,False),
+    'isGravityFlipped': (-3,False),
     'Ypos': (-4,-2), # value-index in blocks!
     'maxResult': (-5,-2), # tensors cannot store None
     "levelYPos": (-6,-2)
