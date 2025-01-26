@@ -10,6 +10,7 @@ from helpers import determine_level_ypos, get_block_index_x, get_block_index_y, 
 # TODO: hwo file import works in python? SHould I increase performance by creating a file "simple saving" 
 # to save raw data and process it outside the game running?
 
+# NOTE: lvl name and lvl id are often the same things.
 
 # Display more rows (default is 60)
 pd.set_option('display.max_rows', 200)
@@ -35,10 +36,10 @@ pd.set_option('display.max_colwidth', 2000)
     Otherwise one should train an agent with ids of different portals extensively, what I am lazy to implement.
 
 isShip()
-touchedRingObject()
+_touchedRingObject()
 isGravityFlipped()
-Ypos()
-maxResult() - tracking the best case. At least necessary for Ypos update.
+yPos()
+maxResult() - tracking the best case. At least necessary for yPos update.
 levelYPos() - ypos which is derived from the level data.
 
 '''
@@ -46,9 +47,9 @@ levelYPos() - ypos which is derived from the level data.
 # TODO: maybe, to process these as consts.
 ADDITIONS = { # matrix row index | default value to fill
     'isShip': (-1,False),
-    'touchedRingObject': (-2,False),
+    '_touchedRingObject': (-2,False),
     'isGravityFlipped': (-3,False),
-    'Ypos': (-4,-2), # value-index in blocks!
+    'yPos': (-4,-2), # value-index in blocks!
     'maxResult': (-5,-2), # tensors cannot store None
     "levelYPos": (-6,-2)
 }
@@ -181,7 +182,7 @@ def fill_padding(matrix):
 
 def fill_level_ypos(matrix):
     level_ypos_rowi, default_level_ypos = get_addition_i('levelYPos', with_value=True)
-    ypos_rowi, default_ypos = get_addition_i('Ypos', with_value=True)
+    ypos_rowi, default_ypos = get_addition_i('yPos', with_value=True)
     prev_ypos = LAST_GROUND_BLOCK_INDEX + 1 # prevpos is for a slight optimisation.
 
     for j in range(matrix.shape[1]):
@@ -217,7 +218,8 @@ def create_level_matrix(df, columns=HITBOX_COLUMNS):
 
     return matrix
 
-def update_stored_matrix(matrix, path):
+def update_stored_matrix(matrix, lvl_name, params={}):
+    path = create_path(lvl_name=lvl_name, **params)
     if not pathlib.Path(path).exists():
         raise ValueError(f"Matrix file {path} doesn't exist.")
     th.save(matrix, path)

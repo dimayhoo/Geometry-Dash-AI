@@ -20,7 +20,7 @@ def get_max_y(Nr, y_block=ONE_BLOCK_SIZE[1]):
     return Nr * y_block
 
 def determine_level_ypos(column, prev_ypos, limit=get_block_index_y(ONE_CUBE_SIZE[1] * CUBE_TIMES_JUMPER_JUMP)):
-    # I don't use binary search, because the Ypos isn't high always.
+    # I don't use binary search, because the yPos isn't high always.
 
     i = 0
     while column[i]: # isnt' 0; I don't care about obstacles because player is out there.

@@ -53,7 +53,12 @@ class TestAgentIndependent(unittest.TestCase):
         # Provide a state with a matrix
         A = self.test_agent.get_actions_matrix()
         self.assertIsNotNone(A, "Actions matrix should be valid.")
-        print(f"Actions matrix: {A}")
+        #print(f"Actions matrix: {A}")
+    
+    def test_agent_level(self):
+        lvl = self.test_agent.lvl_matrix
+        print(lvl)
+
 
 if __name__ == "__main__":
     unittest.main()

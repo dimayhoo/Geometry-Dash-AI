@@ -28,25 +28,24 @@ In the env, extract states in some order (maybe, purely random) from
 
 class GameEnv(gym.Env):
     # TODO: should I include dtypes?
-    def __init__(self, lvl_id, env_data):
+    def __init__(self, env_data):
         super().__init__()
         #state_shape, state_dtype, other_params_shape
         self.action_space = spaces.Discrete(2)
         # low and high values are taken from objects encodings. They are only approximated.
         self.observation_space = spaces.Dict({
             "lvl_frame": spaces.Box(
+                # TODO: if you load the model, load observation space from there (because min and max values differ) or just use global max and global min amon all levels.
                 low=env_data["min_max"][0], 
                 high=env_data["min_max"][1], 
                 shape=env_data["state_shape"], 
                 dtype=env_data["state_dtype"]),
             "other_params": spaces.MultiBinary(env_data["other_params_len"])
         })
-        self.observations_data = None
+        self.observations_data = [] # Will be dynamically initialised
         self.state = None
-        self.lvl_id = lvl_id # TODO: probably useless
 
-    def dynamic_init(self):
-        pass
+        self.reset()
 
     def step(self, action):
         #self.state = self.states_data.pop(0)...
@@ -66,38 +65,56 @@ class GameEnv(gym.Env):
                 - done (bool): Whether the episode has ended.
                 - info (dict): Additional information.
         """
-        # Implement action effects and environment transitions here
-        # Example placeholders:
-        #observation = self.get_current_observation()
-        reward = self.calculate_reward(action)
-        #done = self.check_done()
-        info = {}
+        if not self.observations_data:
+            # If no more data, end the episode
+            done = True
+            observation = self.observation_space.sample()  # Replace with actual observation
+            reward = 0.0
+            info = {}
         
-        #return observation, reward, done, info
+        else:
+            # Implement action effects and environment transitions here
+            # Example placeholders:
+            observation, action, done, death_dict = self.observations_data.pop()
+            reward = self.calculate_reward(action, done, death_dict)
+            info = {}
+            print(reward, done)
+        
+        trancated = False
+        
+        return observation, reward, done, trancated,  info
 
 
-    def reset(self):
-        self.states_data = None
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self.observations_data = []
+        initial_observation = self.observation_space.sample()
+        info = {}
+        return initial_observation, info
 
     def render(self):
         pass
 
     def close(self):
         return super().close()
-    
-    def estimate_reward(self):
-        pass
 
-    def get_level_state(self):
-        pass
-
-    def calculate_reward(self):
+    def calculate_reward(self, action, done, death_dict):
         # NOTE: if we use negative reward to jumps, then we should
         # include a condition "is there a jump in X blocks before current state?"
         # because otherwise agent will learn to avoid jumping in the moment 
         # hoping of a future action. This isn't preferable. Moreover, I need 
         # the opposite: to make a jump in front of an obstacle as early as possible. 
-        pass
+        reward = 0
+
+        if done:
+            reward -= death_dict / 10
+            if action:
+                reward -= 5
+
+        elif action:
+            reward -= 0.05
+        
+        return reward
 
 
 

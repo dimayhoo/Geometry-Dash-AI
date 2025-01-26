@@ -13,7 +13,7 @@ def game_runner(game):
         traceback.print_exc()
 
 def test_worker(game, app, DONE):
-    while not DONE:
+    while not DONE.is_set():
         time.sleep(0.016)
         c+= 1
         #print('fps')
@@ -24,7 +24,7 @@ def test_worker(game, app, DONE):
             #print(game.add(2, 3))
 
 def save_level_worker(game, DONE, hitboxes):
-    while not DONE:
+    while not DONE.is_set():
         time.sleep(3)
         playLayer = game.PlayLayer.getInstance()
         print("PlayLayer is initialised successfully.")
@@ -52,12 +52,12 @@ def save_level_worker(game, DONE, hitboxes):
 
 
 def show_object_position(game, DONE):
-    while not DONE:
+    while not DONE.is_set():
         time.sleep(3)
         playLayer = game.PlayLayer.getInstance()
         print("PlayLayer is initialised successfully.")
         if playLayer: 
-            while not DONE:
+            while not DONE.is_set():
                 time.sleep(0.016)
                 posX = game.getObjectPositionX(playLayer)
                 posY = game.getObjectPositionY(playLayer)
@@ -69,12 +69,12 @@ def show_object_position(game, DONE):
             print("PlayLayer isn't initialised in the game still. ")
 
 def play_layer_test(game, DONE):
-    while not DONE:
+    while not DONE.is_set():
         time.sleep(3)
         playLayer = game.PlayLayer.getInstance()
         print("PlayLayer is initialised successfully.")
         if playLayer: 
-            while not DONE:
+            while not DONE.is_set():
                 # It seems pause and reset work effortlessly.
                 time.sleep(3)
                 #playLayer._pauseUpdate = True if not playLayer._pauseUpdate else False
@@ -100,7 +100,7 @@ def play_layer_test(game, DONE):
             print("PlayLayer isn't initialised in the game still. ")
 
     
-def main_learning_thread(game, DONE):
+def main_learning_thread(game, DONE, termination_callback):
     """ NOTE: Functionality (game loop)
     This is continuous game loop. Observing, learning, etc works by agent status.
     In other words, I call callback -> agent starts learning -> agent completed that ->
@@ -111,12 +111,12 @@ def main_learning_thread(game, DONE):
     print("Main learning thread is initialised. ")
 
     def agent_worker():
-        while not DONE:
+        while not DONE.is_set():
             if agent.status == "done":
                 return 1
             
             elif agent.status == "ready":
-                #gameDataInstance.reset(True) # clean start
+                # NOTE: gameData resets every initGameData
                 game_data = agent.get_game_input()
                 gameDataInstance.initGameData(game_data, agent_callback)
                 print("Starting the observing process.")
@@ -126,6 +126,7 @@ def main_learning_thread(game, DONE):
                 try:
                     data = observation_queue.get(timeout=1)
                     # TODO: pausing playlayer (I suspect by setting _pauseUpdate to true)
+                    print("The data is got from the queue. ")
                     agent.handle_game_observations(data) # here will be training
                 except queue.Empty:
                     continue
@@ -135,7 +136,7 @@ def main_learning_thread(game, DONE):
         observation_queue.put(data)
 
     gameDataInstance = None
-    while not DONE: 
+    while not DONE.is_set(): 
         time.sleep(1)
         # O(1) fn's computation
         gameDataInstance = game.GameData.getInstance()
@@ -143,7 +144,7 @@ def main_learning_thread(game, DONE):
             break
 
     playLayer = None
-    while not DONE:
+    while not DONE.is_set():
         time.sleep(1)
         # O(1) fn's computation
         playLayer = game.PlayLayer.getInstance()
@@ -155,22 +156,39 @@ def main_learning_thread(game, DONE):
 
     observation_queue = queue.Queue()
 
+    init_model_params = {
+        "name": "ppo",
+        "to_init": True,
+        "n_steps": 256
+    }
+
     model_params = {
         "name": "ppo",
-        "to_init": True
+        "to_init": False,
+        "id": "PPO_20250126002948",
+        "n_steps": 256
     }
     lvl_id = playLayer.getLevelId() 
 
+    rl_data = {
+        "batch_size": 3, 
+        "epochs": 50
+    }
+
     # NOTE: if PlayLayer breaks, then the entire obervation process,
     # learning process and other agent functions break completely.
-    agent = Agent(model_params=model_params, lvl_id=lvl_id,rl_data={"batch_size": 2})
+    agent = Agent(model_params=init_model_params, lvl_id=lvl_id,rl_data=rl_data)
+
+    #playLayer.setPlayerSpeed(1)
 
     status = agent_worker() # in any way, agent stop working
+    print("Learning pipeline is completed! ")
+    termination_callback()
     # TODO: ensuring agent saved everything (and closed everything) + callback to stop game from running (close all threads)...
     
             
 def test_gameData(game, DONE):
-    while not DONE:
+    while not DONE.is_set():
         time.sleep(2)
         gameData = game.GameData.getInstance()
         print("GameData is initialised successfully.")
@@ -226,12 +244,12 @@ def test_gameData(game, DONE):
     gameData.doCallback()
 
 
-    '''while not DONE:
+    '''while not DONE.is_set():
         time.sleep(3)
         playLayer = game.PlayLayer.getInstance()
         print("PlayLayer is initialised successfully.")
         if playLayer: 
-            while not DONE:
+            while not DONE.is_set():
                 time.sleep(0.016)
                 game_data = playLayer.getGameData()
                 print(game_data)
