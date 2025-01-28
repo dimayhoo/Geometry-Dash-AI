@@ -1,6 +1,7 @@
 import unittest
-import torch as th
+#import torch as th
 from agent import Agent
+from levelStructure import get_addition_i
 
 ''' NOTE: why outputs repeat?
 They repeat because each test re-initializes the model or environment and prints the same message. You can fix it by removing duplicated print/log calls or reusing the same Agent across tests. For example, only initialize the model in setUpClass or a fixture so it doesn’t run multiple times per test.'''
@@ -38,6 +39,7 @@ class TestAgentIndependent(unittest.TestCase):
     def test_agent_state_multiple_indices(self):
         for coli in [5, 10, 15]:
             state = self.test_agent.get_state(coli)
+            #print(state)
             self.assertIsNotNone(state, f"State should be valid for coli={coli}")
             lvl_frame, other_params = state["lvl_frame"], state["other_params"]
             print(f"coli={coli}, lvl_frame shape={lvl_frame[0].shape if lvl_frame is not None else None}")
@@ -56,8 +58,11 @@ class TestAgentIndependent(unittest.TestCase):
         #print(f"Actions matrix: {A}")
     
     def test_agent_level(self):
-        lvl = self.test_agent.lvl_matrix
-        print(lvl)
+        for i in range(11, 101, 10):
+            print(self.test_agent.lvl_matrix[:, i - 10:i])
+        lvl_yPos = self.test_agent.lvl_matrix[get_addition_i("yPos")]
+        print(lvl_yPos[:100])
+        print(f"Min yPos is {lvl_yPos.min()}, max yPos is {lvl_yPos.max()}")
 
 
 if __name__ == "__main__":

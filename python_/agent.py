@@ -9,13 +9,11 @@ the model itself, but the agent must maintain its instance.
 - I may used definitions of a state vs a current observation incorrectly.
 '''
 from datetime import datetime
+
+# NOTE: Python caches modules after the first import, so repeated imports incur virtually no overhead.
 import torch as th
 import numpy as np
 from levelStructure import (
-    get_block_index_x,
-    get_block_index_y,
-    get_max_x,
-    get_max_y,
     get_level_data,
     update_stored_matrix,
     get_addition_i
@@ -29,10 +27,11 @@ from constants import (
     ONE_BLOCK_SIZE,
     MODEL_PATH,
     LOG_PATH,
-    PADDING_X_BLOCKS
+    PADDING_X_BLOCKS,
+    BLOCKS_PER_CUBE
 )
 from env import GameEnv
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN, A2C
 
 # isShip (and likely others) should be the first (ordered) for get_level_frame_state function
 STATE_PARAMS = ["isShip", "_touchedRingObject", "isGravityFlipped"] 
@@ -62,6 +61,8 @@ class Agent:
             env (gym.Env): The environment instance.
             model: The model used for predictions.
         """
+        
+        self.play_layer_speed = rl_data.get("play_layer_speed", 1)
         self.cur_epoch = 0
         self.epochs = rl_data.get("epochs", 2)
         self.batch_size = rl_data.get("batch_size", BATCH_SIZE)
@@ -74,9 +75,10 @@ class Agent:
         self.init_env(additional_env_data)
         self.model_id = None # is initialised in self.load_model()
         self.load_model(model_params=model_params)
+        self.model_n_steps = model_params.get("n_steps", 1)
         self.A = None
         self.status = "ready" # or "training", "observing" and "done" (all epoches ran)
-        
+        #print("Model name after init is:", self.model.__class__.__name__)
 
     def init_env(self, additional_env_data={}):
         env_data = {
@@ -154,7 +156,10 @@ class Agent:
         for j in range(self.ncols):
             if j == data["dead_pos"]: break
 
-            if data["can_act_matrix"][j]: # otherwise it's on jump
+            # otherwise it's on jump or game wasn't able to track it (and it's zero)
+            # TODO: should be more more robust because yPos from level is is too biased.
+            # Maybe to track the nest yposes according to prev. Anyway you should lead from results (fix when neccessary).
+            if data["can_act_matrix"][j] and data["y_pos_array_best"][j]: 
                 self.lvl_matrix[yposi][j] = data["y_pos_array_best"][j]
             
             for i, key in enumerate(TRACKING_PARAMS):
@@ -174,6 +179,10 @@ class Agent:
         Returns:
             int: The selected action.
         """
+        '''r = np.random.random()
+        if r < 0.1:
+            random = True'''
+
         if random: # this is only needed if you want to test random actions (and use as a comparison)
             return self.env.action_space.sample()
     
@@ -197,8 +206,8 @@ class Agent:
         """
         if positions is None:
             is_ship = params[0] # ! is ship.
-            level_ypos_i = get_addition_i("levelYPos")
-            ypos = self.lvl_matrix[level_ypos_i, coli]
+            level_ypos_i = get_addition_i("yPos")
+            ypos = self.lvl_matrix[level_ypos_i, coli] # in blocks
 
             ypos = int(ypos.item()) # to be used as an index later
 
@@ -239,7 +248,8 @@ class Agent:
         # Return dict for MultiInputPolicy
         return {
             "lvl_frame": np_lvl_frame,
-            "other_params": np_other_params
+            "other_params": np_other_params,
+            "layer_speed": self.play_layer_speed
         }
 
     def get_min_max(self):
@@ -290,7 +300,7 @@ class Agent:
         for rowi in range(self.batch_size):
             for coli in range(self.ncols):
                 np_obs = self.get_state(coli)
-                #print(np_state)
+                #print(np_obs)
                 action = self.get_action(np_obs)
                 #print("Action is ", action)
                 # state can always be derived, so no need to store it.
@@ -309,8 +319,6 @@ class Agent:
         return self.A
     
     def get_game_input(self):
-        Nparams = len(TRACKING_PARAMS)
-
         actionsMatrix = self.get_actions_matrix()
 
         # Maybe, into a dict?
@@ -324,10 +332,15 @@ class Agent:
         print("Agent. Data is received.")
         '''print(data["deadPositions"])
         print(len(data["matrices"]["yPosMatrix"]))'''
-        #print(data["matrices"]["yPosMatrix"][0][:100])
+        print(data["matrices"]["yPosMatrix"][0][:100])
 
-        # Params should be updated before model learning to achieve
-        # proper states (and their results).
+        self.handle_model_learning(data={
+            "canActMatrix": data["matrices"]["canActMatrix"],
+            "deadPositions": data["deadPositions"]
+        })
+
+        # Params shouldn't be updated before model learning otherwise
+        # state-action-reward combination will be inaccurate.
         max_result = np.max(data["deadPositions"])
         prev_max_result = self.lvl_matrix[get_addition_i('maxResult'), 0]
         
@@ -346,11 +359,6 @@ class Agent:
 
         update_stored_matrix(self.lvl_matrix, self.lvl_id)
 
-        self.handle_model_learning(data={
-            "canActMatrix": data["matrices"]["canActMatrix"],
-            "deadPositions": data["deadPositions"]
-        })
-
         self.cur_epoch += 1
         if self.cur_epoch != self.epochs:
             if self.cur_epoch % 10 == 0:
@@ -365,28 +373,36 @@ class Agent:
     def handle_model_learning(self, data):
         observation_data = []
         steps = 0
+        #print(data["canActMatrix"][:100])
 
-        for i in range(self.batch_size):
-            dead_pos = data["deadPositions"][i]
+        for j in range(self.ncols):
+            np_obs = self.get_state(j)
+            for i in range(self.batch_size):
 
-            for j in range(self.ncols):
+                dead_pos = data["deadPositions"][i]
                 if j == dead_pos: break
+                
 
                 if not data["canActMatrix"][i][j]:
                     continue
-
-                np_obs = self.get_state(j)
+                
                 action = self.A[i][j].item()
-                death_dict = dead_pos - STATE_WIDTH_BLOCKS + ONE_BLOCK_SIZE[0]
+                death_dict = dead_pos - STATE_WIDTH_BLOCKS
+
+                # state_death_dict is an ideal dictance
+                state_death_dict = STATE_WIDTH_BLOCKS - (dead_pos - j)
                 done = j >= death_dict # in the current frame or not
                 if done:
                     #print(np_obs)
                     pass
-                observation_data.append((np_obs, action, done, death_dict))
+                observation_data.append((np_obs, action, done, state_death_dict))
                 steps += 1
 
         print(f"Starting learning on {steps} steps")
-        self.env.observations_data = observation_data[::-1] # for popping
+        obs_len = len(observation_data)
+        batches = obs_len // self.model_n_steps
+        self.env.observation_data = observation_data[:batches * self.model_n_steps][::-1] # for popping
+        print("Env observation data length is:", len(self.env.observation_data))
         self.train_model(n_steps=steps)
 
 
@@ -402,9 +418,16 @@ class Agent:
 
     def init_model(self, model_params):
         model_name = model_params["name"].lower()
+        
         del model_params["name"]
+        del model_params["to_init"]
+        
         if model_name == "ppo": 
             model = PPO(policy="MultiInputPolicy", env=self.env, tensorboard_log=LOG_PATH, **model_params)
+        elif model_name == "dqn":
+            model = DQN(policy="MultiInputPolicy", env=self.env, tensorboard_log=LOG_PATH, **model_params)
+        elif model_name == "a2c":
+            model = A2C(policy="MultiInputPolicy", env=self.env, tensorboard_log=LOG_PATH, **model_params)
 
         self.model_id = create_model_id(model_name)
         self.model = model
@@ -418,6 +441,7 @@ class Agent:
             overwrite (bool): If True, overwrites the existing model.
         """
         model_name = self.model.__class__.__name__
+        #print("Model name is:", model_name)
         if not overwrite:
             model_id = create_model_id(model_name)
             path = MODEL_PATH / f"{model_id}.zip"
@@ -430,7 +454,9 @@ class Agent:
 
     def load_model_by_name(self, path, model_name):
         models = {
-            "ppo": lambda: PPO.load(str(path), env=self.env)
+            "ppo": lambda: PPO.load(str(path), env=self.env),
+            "dqn": lambda: DQN.load(str(path), env=self.env),
+            "a2c": lambda: A2C.load(str(path), env=self.env)
         }
         self.model = models[model_name.lower()]()
         print(f"Model {model_name} loaded from {path}.")

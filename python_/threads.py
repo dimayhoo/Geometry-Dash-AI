@@ -159,27 +159,38 @@ def main_learning_thread(game, DONE, termination_callback):
     init_model_params = {
         "name": "ppo",
         "to_init": True,
-        "n_steps": 256
+        "n_steps": 128,
+        "batch_size": 8
+    }
+
+    init_model_params_dqn = {
+        "name": "dqn",
+        "to_init": True
+    }
+
+    init_model_params_a2c = {
+        "name": "a2c",
+        "to_init": True
     }
 
     model_params = {
         "name": "ppo",
         "to_init": False,
-        "id": "PPO_20250126002948",
-        "n_steps": 256
+        "id": "PPO_20250126182300"
     }
     lvl_id = playLayer.getLevelId() 
 
     rl_data = {
-        "batch_size": 3, 
-        "epochs": 50
+        "batch_size":3, 
+        "epochs": 500,
+        "play_layer_speed": 1# I change it manually via a terminal for now.
     }
 
     # NOTE: if PlayLayer breaks, then the entire obervation process,
     # learning process and other agent functions break completely.
-    agent = Agent(model_params=init_model_params, lvl_id=lvl_id,rl_data=rl_data)
+    agent = Agent(model_params=init_model_params_dqn, lvl_id=lvl_id,rl_data=rl_data)
 
-    #playLayer.setPlayerSpeed(1)
+    #playLayer.setPlayerSpeed(1.5) # It changes player's speed - not level one
 
     status = agent_worker() # in any way, agent stop working
     print("Learning pipeline is completed! ")

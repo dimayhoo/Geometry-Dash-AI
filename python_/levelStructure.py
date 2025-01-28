@@ -40,7 +40,7 @@ _touchedRingObject()
 isGravityFlipped()
 yPos()
 maxResult() - tracking the best case. At least necessary for yPos update.
-levelYPos() - ypos which is derived from the level data.
+levelYPos() - ypos which is derived from the level data. Likely irrelevant because I decided to use yPos and only.
 
 '''
 
@@ -172,7 +172,7 @@ def create_default_matrix(df, number_of_additions=len(ADDITIONS)):
     return th.zeros((int(Nr), int(Nc)))
 
 def fill_groud_layer(matrix, ground_layer_y=GROUND_LAYER_Y, ground_obj_id=GROUND_OBJ_ID):
-    matrix[:get_block_index_y(ground_layer_y) + 1, :] = ground_obj_id # y index is exclusive
+    matrix[:LAST_GROUND_BLOCK_INDEX + 1, :] = ground_obj_id # y index is exclusive
 
     return matrix
 
@@ -184,12 +184,14 @@ def fill_level_ypos(matrix):
     level_ypos_rowi, default_level_ypos = get_addition_i('levelYPos', with_value=True)
     ypos_rowi, default_ypos = get_addition_i('yPos', with_value=True)
     prev_ypos = LAST_GROUND_BLOCK_INDEX + 1 # prevpos is for a slight optimisation.
-
+    max_height = matrix.shape[0] - len(ADDITIONS) # exclusive
     for j in range(matrix.shape[1]):
         ypos = matrix[ypos_rowi, j]
         if ypos == default_ypos:
-            ypos = determine_level_ypos(matrix[:, j], prev_ypos)
-        matrix[level_ypos_rowi, j] = ypos
+            ypos = determine_level_ypos(matrix[:, j], j=j, max_height=max_height, prev_ypos=prev_ypos)
+        '''if j < 100:
+            print(ypos, prev_ypos)'''
+        matrix[ypos_rowi, j] = ypos
         prev_ypos = ypos
 
     return matrix
