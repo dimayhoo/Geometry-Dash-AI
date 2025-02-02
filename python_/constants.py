@@ -23,6 +23,8 @@ PADDING_OBJ_ID = -25 # Random. I don't know a better number. They are all intege
 CUBE_TIMES_JUMPER_JUMP = 5 # about 4.5-4.85, definitely less than 5
 LAST_GROUND_BLOCK_INDEX = GROUND_LAYER_Y // ONE_BLOCK_SIZE[1] - (not GROUND_LAYER_Y % ONE_BLOCK_SIZE[1]) # 7 blocks
 
+MINIMAL_FRAME_VALUE = -25
+
 BATCH_SIZE = 10
 
 # NOTE: the height of one jump is 3 cubes. But there are also ring and high jumpers!!! 

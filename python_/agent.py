@@ -28,7 +28,8 @@ from constants import (
     MODEL_PATH,
     LOG_PATH,
     PADDING_X_BLOCKS,
-    BLOCKS_PER_CUBE
+    BLOCKS_PER_CUBE,
+    MINIMAL_FRAME_VALUE
 )
 from env import GameEnv
 from stable_baselines3 import PPO, DQN, A2C
@@ -241,9 +242,19 @@ class Agent:
             arg_i = get_addition_i(arg)
             np_other_params[i] = self.lvl_matrix[arg_i, coli]
             
-        lvl_frame, _ = self.get_lvl_frame_state(coli, np_other_params) 
+        lvl_frame, pos = self.get_lvl_frame_state(coli, np_other_params) 
 
-        np_lvl_frame = self.convert_torch_numpy(lvl_frame)
+        # Normalising to non-negativity and flatenning are required
+        # steps for environment MultiDescrete space.
+        lvl_frame -= MINIMAL_FRAME_VALUE
+
+        np_lvl_frame = self.convert_torch_numpy(lvl_frame).flatten()
+
+        #print("Level frame shape: ", np_lvl_frame.shape)
+        if np_lvl_frame.shape == (0, ):
+            print(pos)
+            print(lvl_frame.shape)
+            print(lvl_frame)
 
         # Return dict for MultiInputPolicy
         return {

@@ -188,7 +188,7 @@ def main_learning_thread(game, DONE, termination_callback):
 
     # NOTE: if PlayLayer breaks, then the entire obervation process,
     # learning process and other agent functions break completely.
-    agent = Agent(model_params=init_model_params_dqn, lvl_id=lvl_id,rl_data=rl_data)
+    agent = Agent(model_params=init_model_params, lvl_id=lvl_id,rl_data=rl_data)
 
     #playLayer.setPlayerSpeed(1.5) # It changes player's speed - not level one
 
