@@ -33,6 +33,7 @@ from constants import (
 )
 from env import GameEnv
 from stable_baselines3 import PPO, DQN, A2C
+from helpers import save_step
 
 # isShip (and likely others) should be the first (ordered) for get_level_frame_state function
 STATE_PARAMS = ["isShip", "_touchedRingObject", "isGravityFlipped"] 
@@ -155,7 +156,7 @@ class Agent:
         yposi = get_addition_i("yPos")
 
         for j in range(self.ncols):
-            if j == data["dead_pos"]: break
+            if j >= data["dead_pos"]: break
 
             # otherwise it's on jump or game wasn't able to track it (and it's zero)
             # TODO: should be more more robust because yPos from level is is too biased.
@@ -181,13 +182,16 @@ class Agent:
             int: The selected action.
         """
         '''r = np.random.random()
-        if r < 0.1:
+        if r < 0.001:
             random = True'''
 
-        if random: # this is only needed if you want to test random actions (and use as a comparison)
+        if random or not obs: # this is only needed if you want to test random actions (and use as a comparison)
+            #if not obs: print("Sampling an action because observation is None. ")
+            #if random: print("Sampling an action because we need a random one.")
             return self.env.action_space.sample()
     
-        action, _states = self.model.predict(obs, deterministic=True)
+        action, _states = self.model.predict(obs,  deterministic=True) # deterministic=False to allow randomness
+        #if action: print(f"Model chose to act. ")
         return action
 
 
@@ -244,17 +248,23 @@ class Agent:
             
         lvl_frame, pos = self.get_lvl_frame_state(coli, np_other_params) 
 
-        # Normalising to non-negativity and flatenning are required
-        # steps for environment MultiDescrete space.
-        lvl_frame -= MINIMAL_FRAME_VALUE
+        # Normalising to non-negative
+        #lvl_frame -= MINIMAL_FRAME_VALUE
 
-        np_lvl_frame = self.convert_torch_numpy(lvl_frame).flatten()
+        np_lvl_frame = self.convert_torch_numpy(lvl_frame)
 
+        '''first_th = lvl_frame[0][0] # everything correct on testing
+        first_np = np_lvl_frame[0][0]
+        if first_th != first_np:
+            print("First value of th doesn't equal to the first value of np. ")'''
+        
         #print("Level frame shape: ", np_lvl_frame.shape)
-        if np_lvl_frame.shape == (0, ):
+        if not np_lvl_frame.shape[0]:
+            '''print("LEVEL FRAME IS NONE. ")
             print(pos)
             print(lvl_frame.shape)
-            print(lvl_frame)
+            print(lvl_frame)'''
+            return None
 
         # Return dict for MultiInputPolicy
         return {
@@ -306,6 +316,9 @@ class Agent:
         Returns:
             torch.Tensor: The actions matrix.
         """
+        # This function overdooes pretty much because player is more likely to die
+        # earlier, at least during first learning, but it's still pretty fast, so I don'
+        # see the reason to invest time here on fixing it.
         A = self.create_dummy_action_matrix(self.ncols, batch_size=self.batch_size)
 
         for rowi in range(self.batch_size):
@@ -313,6 +326,16 @@ class Agent:
                 np_obs = self.get_state(coli)
                 #print(np_obs)
                 action = self.get_action(np_obs)
+
+                # it seems like everything is good with early observation
+                proc_obs_info = {
+                    "obs": np_obs,
+                    "action": action,
+                    "colum": coli
+                }
+                #save_step(proc_obs_info, path="observations/proc/")
+
+
                 #print("Action is ", action)
                 # state can always be derived, so no need to store it.
                 # NOTE: must use tensor with th matrix
@@ -343,7 +366,7 @@ class Agent:
         print("Agent. Data is received.")
         '''print(data["deadPositions"])
         print(len(data["matrices"]["yPosMatrix"]))'''
-        print(data["matrices"]["yPosMatrix"][0][:100])
+        #print(data["matrices"]["yPosMatrix"][0][:100])
 
         self.handle_model_learning(data={
             "canActMatrix": data["matrices"]["canActMatrix"],
@@ -366,6 +389,8 @@ class Agent:
             }
             
             self.handle_params_update(tracking_data)
+        
+        
         print("Received data has been processed successfully. ")
 
         update_stored_matrix(self.lvl_matrix, self.lvl_id)
@@ -381,18 +406,46 @@ class Agent:
             self.save_model()
             self.status = "done"
 
+    def handle_obs_data_for_model_cut(self, observation_data: list):
+        obs_len = len(observation_data)
+        batches = obs_len // self.model_n_steps
+
+        for item in observation_data:
+            save_step(item, path="observations/proc/", max_batch_count=5) # 2 obs to save
+
+        self.env.observation_data = observation_data[:batches * self.model_n_steps][::-1] # for popping
+
+        for item in observation_data:
+            save_step(item, path="observations/env/", max_batch_count=7) # 2 obs to save
+        
+        try:
+            print("Env observation shape is:", self.env.observation_data.shape)
+        except Exception as e:
+            print("Env observation length is:", len(self.env.observation_data))
+
+        learning_steps = len(self.env.observation_data)
+        return learning_steps
+
     def handle_model_learning(self, data):
         observation_data = []
         steps = 0
+        no_obs = 0
         #print(data["canActMatrix"][:100])
 
         for j in range(self.ncols):
             np_obs = self.get_state(j)
+
+            if np_obs is None:
+                #print(f"For observation with column {j} the observation doesn't exist. ")
+                no_obs += 1
+                continue
+
             for i in range(self.batch_size):
 
                 dead_pos = data["deadPositions"][i]
-                if j == dead_pos: break
-                
+
+                if j >= dead_pos: 
+                    break # already dead
 
                 if not data["canActMatrix"][i][j]:
                     continue
@@ -401,6 +454,7 @@ class Agent:
                 death_dict = dead_pos - STATE_WIDTH_BLOCKS
 
                 # state_death_dict is an ideal dictance
+                # NOTE: it's actually reverse death distance.
                 state_death_dict = STATE_WIDTH_BLOCKS - (dead_pos - j)
                 done = j >= death_dict # in the current frame or not
                 if done:
@@ -409,12 +463,13 @@ class Agent:
                 observation_data.append((np_obs, action, done, state_death_dict))
                 steps += 1
 
-        print(f"Starting learning on {steps} steps")
-        obs_len = len(observation_data)
-        batches = obs_len // self.model_n_steps
-        self.env.observation_data = observation_data[:batches * self.model_n_steps][::-1] # for popping
-        print("Env observation data length is:", len(self.env.observation_data))
-        self.train_model(n_steps=steps)
+
+        #print(f"Starting learning on {steps} steps")
+        print(f"There are {self.ncols - no_obs} valid and {no_obs} none observations. ")
+        print(f"Observation data length: {len(observation_data)}")
+        learning_steps = self.handle_obs_data_for_model_cut(observation_data=observation_data)
+
+        self.train_model(n_steps=learning_steps)
 
 
     def train_model(self, n_steps=1000, n_eval_episodes=10):
@@ -435,10 +490,13 @@ class Agent:
         
         if model_name == "ppo": 
             model = PPO(policy="MultiInputPolicy", env=self.env, tensorboard_log=LOG_PATH, **model_params)
+            print("PPO model is initialised. ")
         elif model_name == "dqn":
             model = DQN(policy="MultiInputPolicy", env=self.env, tensorboard_log=LOG_PATH, **model_params)
         elif model_name == "a2c":
             model = A2C(policy="MultiInputPolicy", env=self.env, tensorboard_log=LOG_PATH, **model_params)
+
+        #print("\nModel params:", model.get_parameters())
 
         self.model_id = create_model_id(model_name)
         self.model = model

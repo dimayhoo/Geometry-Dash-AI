@@ -7,6 +7,8 @@ game/build with sfml 2.6.0/
 game/build_x64/
 */Resources/
 temp.py
-python_/levels/
 */__pycache__/
-*/training/
+python_/__pycache__
+python_/observations
+python_/training
+python_/levels/

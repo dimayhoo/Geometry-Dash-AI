@@ -156,11 +156,20 @@ def main_learning_thread(game, DONE, termination_callback):
 
     observation_queue = queue.Queue()
 
+
     init_model_params = {
         "name": "ppo",
         "to_init": True,
-        "n_steps": 128,
-        "batch_size": 8
+        "n_steps": 64, # the less the more precise and more computationally expensive
+        "batch_size": 2,
+        "learning_rate":1, # learning rate is a valid argument
+        "ent_coef": 0 # I set it to 1-^(-7) and it jumps every time... great exploration, worst reward
+    }
+
+    ppo = {
+        "name": "ppo",
+        "to_init": False,
+        "id": "PPO_20250325120112"
     }
 
     init_model_params_dqn = {
@@ -181,8 +190,8 @@ def main_learning_thread(game, DONE, termination_callback):
     lvl_id = playLayer.getLevelId() 
 
     rl_data = {
-        "batch_size":3, 
-        "epochs": 500,
+        "batch_size":4, # this is mine batch size (equals to the number of iterations of the game)
+        "epochs": 9,
         "play_layer_speed": 1# I change it manually via a terminal for now.
     }
 

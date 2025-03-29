@@ -28,7 +28,7 @@ MINIMAL_FRAME_VALUE = -25
 BATCH_SIZE = 10
 
 # NOTE: the height of one jump is 3 cubes. But there are also ring and high jumpers!!! 
-STATE_WIDTH_BLOCKS = ONE_CUBE_SIZE[0] * 5 // ONE_BLOCK_SIZE[0]
+STATE_WIDTH_BLOCKS = ONE_CUBE_SIZE[0] * 9 // ONE_BLOCK_SIZE[0]
 STATE_HEIGHT_BLOCKS = ONE_CUBE_SIZE[1] * 7 // ONE_BLOCK_SIZE[1] # 3 cubes original jump + 3 cubes possible jumper or ring jumper + 1 for ground
 PADDING_X_BLOCKS = STATE_WIDTH_BLOCKS
 

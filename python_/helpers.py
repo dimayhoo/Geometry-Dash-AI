@@ -1,5 +1,9 @@
 #TODO: make helpers if yo uahve time
 from constants import ONE_CUBE_SIZE, BLOCKS_PER_CUBE, CUBE_TIMES_JUMPER_JUMP, LAST_GROUND_BLOCK_INDEX, ONE_BLOCK_SIZE
+import os
+import pickle
+import datetime
+import pathlib
 
 # If not ending and an object underlap, round to the full.  
 # We should start from the first and shouldn't overlap to the ending.
@@ -49,4 +53,67 @@ def determine_level_ypos(column, j, prev_ypos, max_height, limit=3): #limit=BLOC
 
     return ypos  
 
+def get_parent_path(postfix):
+    file_path = pathlib.Path(__file__).parent / postfix
+    return file_path
+
+def flush_batch(path):
+    """Force save any remaining data in the batch"""
+    if hasattr(save_step, "batch") and save_step.batch:
+        save_step.batch_count += 1
+        name = f"batch_{save_step.session_id}_{save_step.batch_count}"
+        file_path = pathlib.Path(__file__).parent / path / f"{name}.pkl"
+        with open(file_path, "wb") as f:  
+            print(f"Saving final batch with path {file_path}. ")
+            print(save_step.batch)
+            pickle.dump(save_step.batch, f)
+        save_step.batch = []
+
+def save_step(step_data, path='observations/', max_batch_count=3):
+    return
+    """
+    Save step data to a file.
+    
+    Args:
+        step_data (dict): Dictionary containing step information
+        path (str): Directory path to save the file
+    """
+    
+    # Ensure directory exists
+    os.makedirs(path, exist_ok=True)
+    
+    # Initialize static variables if first time
+    if not hasattr(save_step, "batch"):
+        save_step.batch = []
+        save_step.session_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        save_step.batch_count = 0
+    
+    if save_step.batch_count >= max_batch_count:
+        return 
+    
+    # Add current step to batch
+    save_step.batch.append(step_data)
+    
+    # Only save when batch reaches sufficient size
+    batch_size = 100  # Adjust based on your data size
+    if len(save_step.batch) >= batch_size:
+        print("Batch size is full. ")
+        flush_batch(path)
+    
+
+def load_from_pickle(path):
+    parent = pathlib.Path(__file__).parent
+    path = parent / path
+    with open(path, 'rb') as f:  # Open file in binary mode
+        file = pickle.load(f)
+    return file
+
+def save_pkl_as_txt(path):
+    list_step_data = load_from_pickle(path)
+
+    txt_path = path[:-4] + ".txt"
+    txt_path = get_parent_path(txt_path)
+    
+    with open(txt_path, "w") as file:
+        file.write(str(list_step_data))
 
