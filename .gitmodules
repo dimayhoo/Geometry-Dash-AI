@@ -1,3 +1,6 @@
 [submodule "cmake_example"]
 	path = cmake_example
 	url = https://github.com/pybind/cmake_example.git
+[submodule "game"]
+	path = game
+	url = https://github.com/dimayhoo/gdai-opengd-game-v1.0.git
